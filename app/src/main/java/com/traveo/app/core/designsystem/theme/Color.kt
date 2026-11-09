@@ -10,6 +10,6 @@ val CardBackground = Color(0xFFF5F5F7)
 
 val TextPrimary = Color(0xFF121212)
 val TextSecondary = Color(0xFFC3C3C3)
-val TextMuted = Color(0xFF9E9E9E)
+val TextMuted = Color(0xFF9CA3AF) // Hint text & muted icons
 
 val SuccessGreen = Color(0xFF4CAF50)

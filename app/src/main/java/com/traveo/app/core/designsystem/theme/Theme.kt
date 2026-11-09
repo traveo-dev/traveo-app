@@ -15,7 +15,9 @@ private val LightColorScheme = lightColorScheme(
     background = Color.White,
     onBackground = TextPrimary,
     surfaceVariant = SurfaceGray,
-    onSurfaceVariant = TextSecondary
+    onSurfaceVariant = TextSecondary,
+    outline = TextMuted, // #9CA3AF
+    outlineVariant = TextMuted
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -26,7 +28,9 @@ private val DarkColorScheme = darkColorScheme(
     background = Color(0xFF121212),
     onBackground = Color.White,
     surfaceVariant = Color(0xFF1E1E1E),
-    onSurfaceVariant = Color(0xFFB0B0B0)
+    onSurfaceVariant = Color(0xFFB0B0B0),
+    outline = TextMuted,
+    outlineVariant = TextMuted
 )
 
 @Composable
