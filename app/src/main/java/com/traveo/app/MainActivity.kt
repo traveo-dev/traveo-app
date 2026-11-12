@@ -18,13 +18,19 @@ import com.traveo.app.feature.auth.presentation.login.LoginScreen
 import com.traveo.app.feature.auth.presentation.otp.OtpScreen
 import com.traveo.app.feature.auth.presentation.otp.OtpType
 import com.traveo.app.feature.auth.presentation.welcome.WelcomeScreen
+import com.traveo.app.feature.home.presentation.HomeScreen
+import com.traveo.app.feature.home.presentation.ResortDetailScreen
+import com.traveo.app.feature.home.presentation.SearchScreen
 
 private enum class Screen {
     WELCOME,
     LOGIN_PHONE,
     LOGIN_EMAIL,
     OTP_PHONE,
-    OTP_EMAIL
+    OTP_EMAIL,
+    HOME,
+    SEARCH,
+    RESORT_DETAIL
 }
 
 class MainActivity : ComponentActivity() {
@@ -51,7 +57,7 @@ fun TraveoAppNavigation() {
                     currentScreen = Screen.LOGIN_PHONE
                 },
                 onGoogleSignInClick = {
-                    // Handle Google Sign-In
+                    currentScreen = Screen.HOME
                 }
             )
         }
@@ -68,7 +74,7 @@ fun TraveoAppNavigation() {
                     currentScreen = Screen.OTP_PHONE
                 },
                 onGoogleSignInClick = {
-                    // Handle Google Sign-In
+                    currentScreen = Screen.HOME
                 },
                 onEmailSignInClick = {
                     currentScreen = Screen.LOGIN_EMAIL
@@ -88,7 +94,7 @@ fun TraveoAppNavigation() {
                     currentScreen = Screen.OTP_EMAIL
                 },
                 onGoogleSignInClick = {
-                    // Handle Google Sign-In
+                    currentScreen = Screen.HOME
                 },
                 onPhoneSignInClick = {
                     currentScreen = Screen.LOGIN_PHONE
@@ -106,7 +112,7 @@ fun TraveoAppNavigation() {
                     context.startActivity(intent)
                 },
                 onContinueClick = { otpCode ->
-                    // Handle OTP Submit
+                    currentScreen = Screen.HOME
                 }
             )
         }
@@ -121,7 +127,41 @@ fun TraveoAppNavigation() {
                     context.startActivity(intent)
                 },
                 onContinueClick = { otpCode ->
-                    // Handle OTP Submit
+                    currentScreen = Screen.HOME
+                }
+            )
+        }
+        Screen.HOME -> {
+            HomeScreen(
+                onSearchClick = {
+                    currentScreen = Screen.SEARCH
+                },
+                onResortClick = {
+                    currentScreen = Screen.RESORT_DETAIL
+                }
+            )
+        }
+        Screen.SEARCH -> {
+            SearchScreen(
+                onBackClick = {
+                    currentScreen = Screen.HOME
+                },
+                onResortClick = {
+                    currentScreen = Screen.RESORT_DETAIL
+                }
+            )
+        }
+        Screen.RESORT_DETAIL -> {
+            ResortDetailScreen(
+                onBackClick = {
+                    currentScreen = Screen.HOME
+                },
+                onCallClick = {
+                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:+62361701888"))
+                    context.startActivity(intent)
+                },
+                onBookClick = {
+                    // Handle booking action
                 }
             )
         }
