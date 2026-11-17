@@ -6,19 +6,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -38,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,9 +51,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.traveo.app.R
+import com.traveo.app.core.designsystem.components.CategoryChips
+import com.traveo.app.core.designsystem.components.CompactResortCard
+import com.traveo.app.core.designsystem.components.FeaturedResortCard
+import com.traveo.app.core.designsystem.components.ResortItem
+import com.traveo.app.core.designsystem.components.SampleResorts
+import com.traveo.app.core.designsystem.components.TraveoSearchBar
 import com.traveo.app.core.designsystem.theme.TraveoTheme
-
-private val CategoryList = listOf("Stays", "Flights", "Rentals", "Tours")
 
 data class RecentSearch(
     val title: String,
@@ -56,16 +65,19 @@ data class RecentSearch(
 )
 
 private val DefaultRecentSearches = listOf(
-    RecentSearch("The Mulia", "Villas · Sep 4 - 7 · 2 guests"),
-    RecentSearch("Kayumanis Jimbaran Estate", "Cottage · Sep 4 - 8 · 2 guests")
+    RecentSearch("The Mulia", "Villas · Sep 4 — 7 · 2 guests"),
+    RecentSearch("Kayumanis Jimbaran Estate", "Cottage · Sep 4 — 8 · 2 guests")
 )
+
+private val SearchResults = listOf(SampleResorts[1], SampleResorts[2])
+private val TrendingResorts = listOf(SampleResorts[0], SampleResorts[1])
 
 @Composable
 fun SearchScreen(
     onBackClick: () -> Unit = {},
     onResortClick: () -> Unit = {}
 ) {
-    var searchQuery by remember { mutableStateOf("Ubud") }
+    var searchQuery by remember { mutableStateOf("") }
     var selectedCategoryIndex by remember { mutableIntStateOf(0) }
     var selectedNavTab by remember { mutableIntStateOf(0) }
     val recentSearches = remember { mutableStateListOf(*DefaultRecentSearches.toTypedArray()) }
@@ -79,256 +91,121 @@ fun SearchScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .statusBarsPadding()
                     .padding(bottom = 90.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // 1. Search Bar Header
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Back / Location Capsule Box
-                    Row(
-                        modifier = Modifier
-                            .height(56.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(horizontal = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                                .clickable(onClick = onBackClick),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_location),
-                                contentDescription = "Location",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Bali",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                // Search Bar Header
+                TraveoSearchBar(
+                    modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    onLocationClick = onBackClick
+                )
 
-                    // Search TextField
-                    TextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(56.dp),
-                        placeholder = {
-                            Text(
-                                text = "Where are you going?",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.outline
-                            )
-                        },
-                        trailingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_search),
-                                contentDescription = "Search",
-                                tint = MaterialTheme.colorScheme.outline,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        },
-                        singleLine = true,
-                        shape = RoundedCornerShape(50),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        textStyle = MaterialTheme.typography.bodyLarge
-                    )
-                }
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // 2. Category Chips Row
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(CategoryList.size) { index ->
-                        val isSelected = selectedCategoryIndex == index
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                .clickable { selectedCategoryIndex = index }
-                                .padding(horizontal = 20.dp, vertical = 10.dp)
-                        ) {
-                            Text(
-                                text = CategoryList[index],
-                                style = MaterialTheme.typography.labelLarge,
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
+                // Category Chips Row
+                CategoryChips(
+                    selectedIndex = selectedCategoryIndex,
+                    onSelected = { selectedCategoryIndex = it }
+                )
 
-                // 3. Recent Searches Section
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Recent Searches Section
                 if (recentSearches.isNotEmpty()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Recent",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        SectionHeader(
+                            title = "Recent",
+                            actionText = "Clear all",
+                            onActionClick = { recentSearches.clear() }
+                        )
 
-                            Text(
-                                text = "Clear all",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline,
-                                modifier = Modifier.clickable { recentSearches.clear() }
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        recentSearches.forEach { item ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .clickable(onClick = onResortClick)
-                                    .padding(vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
+                        recentSearches.forEachIndexed { index, item ->
+                            val isLast = index == recentSearches.lastIndex
+
+                            Column {
+                                Row(
                                     modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                                    contentAlignment = Alignment.Center
+                                        .fillMaxWidth()
+                                        .clickable(onClick = onResortClick)
+                                        .padding(bottom = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(text = "🏠", fontSize = 20.sp)
+                                    Box(
+                                        modifier = Modifier
+                                            .size(56.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_home),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.outline,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(16.dp))
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = item.title,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Normal,
+                                            color = MaterialTheme.colorScheme.onBackground
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = item.subtitle,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                            color = MaterialTheme.colorScheme.outline
+                                        )
+                                    }
+
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_arrow_up_right),
+                                        contentDescription = "Open",
+                                        tint = MaterialTheme.colorScheme.outline,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
 
-                                Spacer(modifier = Modifier.width(16.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = item.title,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onBackground
+                                if (!isLast) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(1.dp)
+                                            .background(Color(0x0F000000))
                                     )
-                                    Text(
-                                        text = item.subtitle,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
                                 }
-
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_arrow_up_right),
-                                    contentDescription = "Open",
-                                    tint = MaterialTheme.colorScheme.outline,
-                                    modifier = Modifier.size(16.dp)
-                                )
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                // 4. Search Results Horizontal Row
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        SearchResortCard(
-                            imageRes = R.drawable.resort_kayumanis,
-                            location = "Bali, Indonesia",
-                            title = "Kayumanis Jimbaran Estate",
-                            address = "📍 Jl. Nusa Dua Selatan, Jimbaran ↗",
-                            rating = "⭐ 5.0",
-                            price = "$480",
-                            onClick = onResortClick
-                        )
-                    }
-                    item {
-                        SearchResortCard(
-                            imageRes = R.drawable.resort_alila,
-                            location = "Bali, Indonesia",
-                            title = "Alila Seminyak",
-                            address = "📍 Jl. Kayu Aya No. 7, Seminyak ↗",
-                            rating = "⭐ 5.0",
-                            price = "$520",
-                            onClick = onResortClick
-                        )
-                    }
-                }
+                // Search Results
+                ResortRow(resorts = SearchResults, onResortClick = onResortClick)
 
-                // 5. Trending in Bali Section
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Trending in Bali",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                Spacer(modifier = Modifier.height(20.dp))
 
-                        Text(
-                            text = "See all",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    }
+                // Trending in Bali Section
 
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        item {
-                            SearchResortCard(
-                                imageRes = R.drawable.resort_the_mulia,
-                                location = "Bali, Indonesia",
-                                title = "The Mulia Resort",
-                                address = "📍 St. Regis Bali Resort ↗",
-                                rating = "⭐ 4.8",
-                                price = "$420",
-                                onClick = onResortClick
-                            )
-                        }
-                        item {
-                            SearchResortCard(
-                                imageRes = R.drawable.resort_kayumanis,
-                                location = "Bali, Indonesia",
-                                title = "Kayumanis Jimbaran Estate",
-                                address = "📍 Banjar Baung, Ubud ↗",
-                                rating = "⭐ 5.0",
-                                price = "$340",
-                                onClick = onResortClick
-                            )
-                        }
-                    }
-                }
+                SectionHeader(
+                    title = "Trending in Bali",
+                    actionText = "See all",
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                ResortRow(resorts = TrendingResorts, onResortClick = onResortClick)
             }
         }
 
@@ -344,121 +221,46 @@ fun SearchScreen(
 }
 
 @Composable
-private fun SearchResortCard(
-    imageRes: Int,
-    location: String,
+private fun SectionHeader(
     title: String,
-    address: String,
-    rating: String,
-    price: String,
-    onClick: () -> Unit
+    actionText: String,
+    modifier: Modifier = Modifier,
+    onActionClick: (() -> Unit)? = null
 ) {
-    Box(
-        modifier = Modifier
-            .width(220.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable(onClick = onClick)
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = title,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Text(
+            text = actionText,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.outline,
+            modifier = if (onActionClick != null) Modifier.clickable(onClick = onActionClick)
+            else Modifier
+        )
+    }
+}
 
-                // Top Location Tag
-                Box(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.TopStart)
-                        .clip(RoundedCornerShape(50))
-                        .background(Color.White.copy(alpha = 0.9f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = location,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black
-                    )
-                }
-
-                // Top Right Action Arrow
-                Box(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.TopEnd)
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.6f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_up_right),
-                        contentDescription = "Details",
-                        tint = Color.White,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-            }
-
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 1
-                )
-
-                Text(
-                    text = address,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 11.sp,
-                    maxLines = 1
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = rating,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "From ",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = price,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Text(
-                            text = " Only",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+@Composable
+private fun ResortRow(
+    resorts: List<ResortItem>,
+    onResortClick: () -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        items(resorts) { resort ->
+            CompactResortCard(
+                resort = resort,
+                onClick = onResortClick
+            )
         }
     }
 }
