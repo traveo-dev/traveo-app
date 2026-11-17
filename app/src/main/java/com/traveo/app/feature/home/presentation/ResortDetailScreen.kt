@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -30,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,11 +42,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,10 +58,17 @@ import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.components.SectionHeader
 import com.traveo.app.core.designsystem.theme.TraveoTheme
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.platform.LocalDensity
 
 private val HeroHeight = 400.dp
 private val SheetOverlap = 40.dp
 private val PriceColor = Color(0xFFE8FE78)
+
+private val TopBarHeight = 74.dp // 50dp button + 12dp padding top and bottom
 
 private data class IconLabel(
     @DrawableRes val iconRes: Int,
@@ -97,17 +110,31 @@ fun ResortDetailScreen(
     onBookClick: () -> Unit = {}
 ) {
     var isFavorite by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+    val density = LocalDensity.current
+
+    // Scroll distance until the sheet reaches the top bar
+    val statusBarPx = WindowInsets.statusBars.getTop(density)
+    val collapseRangePx = with(density) {
+        (HeroHeight - SheetOverlap - TopBarHeight).toPx()
+    } - statusBarPx
+
+    // 0f = expanded, 1f = sheet is at the top
+    val progress by remember {
+        derivedStateOf { (scrollState.value / collapseRangePx).coerceIn(0f, 1f) }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Hero image
+        // 1. Hero (behind everything, parallax)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(HeroHeight)
+                .graphicsLayer { translationY = -scrollState.value * 0.5f }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.resort_kayumanis),
@@ -116,7 +143,6 @@ fun ResortDetailScreen(
                 contentScale = ContentScale.Crop
             )
 
-            // Bottom scrim so the white text stays readable
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -128,51 +154,14 @@ fun ResortDetailScreen(
                     )
             )
 
-            // Back & favorite buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(start = 16.dp, end = 16.dp, top = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.25f))
-                        .clickable(onClick = onBackClick),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .clickable { isFavorite = !isFavorite },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_heart),
-                        contentDescription = "Favorite",
-                        tint = if (isFavorite) Color(0xFFFF3E3E) else MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
             // Location, title, price, amenities
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
+                    .graphicsLayer {
+                        alpha = (1f - scrollState.value / (collapseRangePx * 0.6f))
+                            .coerceIn(0f, 1f)
+                    }
                     .padding(start = 16.dp, end = 16.dp, bottom = SheetOverlap + 20.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -242,61 +231,125 @@ fun ResortDetailScreen(
         }
 
         // White sheet
-        Surface(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = HeroHeight - SheetOverlap),
-            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-            color = Color.White
+                .verticalScroll(scrollState)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(top = 16.dp, bottom = 140.dp)
+            Spacer(modifier = Modifier.height(HeroHeight - SheetOverlap))
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                color = Color.White
             ) {
-                // Description
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    SectionHeader(title = "Description")
-                    Spacer(modifier = Modifier.height(24.dp))
-                    ExpandableText(text = ResortDescription)
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Facilities
-                FacilitiesGrid(
-                    facilities = Facilities,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Gallery
-                SectionHeader(
-                    title = "Gallery",
-                    actionText = "See all",
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp)
-                ) {
-                    items(GalleryImages) { imageRes ->
-                        Image(
-                            painter = painterResource(id = imageRes),
-                            contentDescription = "Gallery image",
-                            modifier = Modifier
-                                .size(width = 164.dp, height = 170.dp)
-                                .clip(RoundedCornerShape(24.dp)),
-                            contentScale = ContentScale.Crop
-                        )
+                Column(modifier = Modifier.padding(top = 16.dp, bottom = 140.dp)) {
+                    // Description
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        SectionHeader(title = "Description")
+                        Spacer(modifier = Modifier.height(24.dp))
+                        ExpandableText(text = ResortDescription)
                     }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    FacilitiesGrid(
+                        facilities = Facilities,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    SectionHeader(
+                        title = "Gallery",
+                        actionText = "See all",
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp)
+                    ) {
+                        items(GalleryImages) { imageRes ->
+                            Image(
+                                painter = painterResource(id = imageRes),
+                                contentDescription = "Gallery image",
+                                modifier = Modifier
+                                    .size(width = 164.dp, height = 170.dp)
+                                    .clip(RoundedCornerShape(24.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+
+                    // TEMP: forces the page to be long enough to see the effect. Remove later.
+                    Spacer(modifier = Modifier.height(500.dp))
                 }
             }
+        }
+
+        // Top bar (pinned)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .background(Color.White.copy(alpha = progress))
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(
+                            lerp(Color.White.copy(alpha = 0.25f), Color(0xFFF3F3F3), progress)
+                        )
+                        .clickable(onClick = onBackClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                        contentDescription = "Back",
+                        tint = lerp(Color.White, MaterialTheme.colorScheme.onBackground, progress),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(lerp(Color.White, Color(0xFFF3F3F3), progress))
+                        .clickable { isFavorite = !isFavorite },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_heart),
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) Color(0xFFFF3E3E) else MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            Text(
+                text = "Kayumanis Jimbaran Estate",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 62.dp)
+                    .graphicsLayer { alpha = progress }
+            )
         }
 
         // Floating action bar
@@ -314,8 +367,7 @@ fun ResortDetailScreen(
         ) {
             Surface(
                 shape = RoundedCornerShape(36.dp),
-                color = Color(0xCCFFFFFF),
-//                shadowElevation = 1.dp
+                color = Color(0xCCFFFFFF)
             ) {
                 Row(
                     modifier = Modifier
