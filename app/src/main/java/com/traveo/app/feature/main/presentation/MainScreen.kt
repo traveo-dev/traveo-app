@@ -36,7 +36,10 @@ private val MainNavItems = listOf(
 @Composable
 fun MainScreen(
     onSearchClick: () -> Unit = {},
-    onResortClick: () -> Unit = {}
+    onResortClick: () -> Unit = {},
+    onProfileSearchClick: () -> Unit = {},
+    onProfileUpgradeClick: () -> Unit = {},
+    onProfileSettingClick: (String) -> Unit = {}
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
@@ -50,7 +53,11 @@ fun MainScreen(
                 )
                 1 -> FinanceScreen()
                 2 -> MyTripsScreen()
-                3 -> ProfileScreen()
+                3 -> ProfileScreen(
+                    onSearchClick = onProfileSearchClick,
+                    onUpgradeClick = onProfileUpgradeClick,
+                    onSettingClick = onProfileSettingClick
+                )
             }
         }
 
