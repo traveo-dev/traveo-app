@@ -1,4 +1,4 @@
-package com.traveo.app.core.designsystem.components
+package com.traveo.app.core.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

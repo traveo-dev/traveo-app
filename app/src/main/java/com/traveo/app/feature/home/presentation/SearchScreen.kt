@@ -41,11 +41,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.traveo.app.R
-import com.traveo.app.core.designsystem.components.CategoryChips
-import com.traveo.app.core.designsystem.components.CompactResortCard
-import com.traveo.app.core.designsystem.components.ResortItem
-import com.traveo.app.core.designsystem.components.SampleResorts
-import com.traveo.app.core.designsystem.components.TraveoSearchBar
+import com.traveo.app.core.designsystem.component.CategoryChips
+import com.traveo.app.core.designsystem.component.CompactResortCard
+import com.traveo.app.core.designsystem.component.ResortItem
+import com.traveo.app.core.designsystem.component.SampleResorts
+import com.traveo.app.core.designsystem.component.TraveoSearchBar
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
 data class RecentSearch(

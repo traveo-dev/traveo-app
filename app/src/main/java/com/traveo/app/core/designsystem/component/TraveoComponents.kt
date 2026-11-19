@@ -1,4 +1,4 @@
-package com.traveo.app.core.designsystem.components
+package com.traveo.app.core.designsystem.component
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background

@@ -56,13 +56,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.traveo.app.R
-import com.traveo.app.core.designsystem.components.SectionHeader
+import com.traveo.app.core.designsystem.component.SectionHeader
 import com.traveo.app.core.designsystem.theme.TraveoTheme
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.platform.LocalDensity
 
 private val HeroHeight = 400.dp
 private val SheetOverlap = 40.dp
