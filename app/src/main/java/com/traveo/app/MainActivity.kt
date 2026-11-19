@@ -18,9 +18,9 @@ import com.traveo.app.feature.auth.presentation.login.LoginScreen
 import com.traveo.app.feature.auth.presentation.otp.OtpScreen
 import com.traveo.app.feature.auth.presentation.otp.OtpType
 import com.traveo.app.feature.auth.presentation.welcome.WelcomeScreen
-import com.traveo.app.feature.home.presentation.HomeScreen
 import com.traveo.app.feature.home.presentation.ResortDetailScreen
 import com.traveo.app.feature.home.presentation.SearchScreen
+import com.traveo.app.feature.main.presentation.MainScreen
 
 private enum class Screen {
     WELCOME,
@@ -132,7 +132,7 @@ fun TraveoAppNavigation() {
             )
         }
         Screen.HOME -> {
-            HomeScreen(
+            MainScreen(
                 onSearchClick = {
                     currentScreen = Screen.SEARCH
                 },
