@@ -1,5 +1,6 @@
 package com.traveo.app.feature.profile.presentation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,15 +20,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,16 +35,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
+private data class SearchResult(
+    val title: String,
+    val subtitle: String,
+    val target: String
+)
+
 private val RecentChips = listOf("Passport expiry", "Two-factor", "Seat preference", "Currency")
+
+private val Results = listOf(
+    SearchResult("Payment Methods", "Profile · 2 cards saved", "Payment Methods"),
+    SearchResult("Payment history", "Plan & Subscription", "Plan & Subscription"),
+    SearchResult("Billing address", "Payment Methods", "Payment Methods")
+)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -57,131 +68,133 @@ fun SearchProfileScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp),
         ) {
-            // Top Bar with Search Input
+            // Header
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                CircleIconButton(
+                    iconRes = R.drawable.ic_arrow_back,
+                    contentDescription = "Back",
+                    onClick = onBackClick
+                )
 
-                TextField(
+                BasicTextField(
                     value = query,
                     onValueChange = { query = it },
                     modifier = Modifier
                         .weight(1f)
-                        .height(54.dp),
-                    placeholder = {
-                        Text(
-                            text = "Search settings, cards, passport...",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_search),
-                            contentDescription = "Search",
-                            tint = MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    },
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.surface),
                     singleLine = true,
-                    shape = RoundedCornerShape(50),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onBackground
                     ),
-                    textStyle = MaterialTheme.typography.bodyLarge
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    decorationBox = { innerTextField ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 18.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_search),
+                                contentDescription = "Search",
+                                tint = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.size(24.dp)
+                            )
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                if (query.isEmpty()) {
+                                    Text(
+                                        text = "Search settings, cards, passport...",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.outline,
+                                        maxLines = 1
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
+                    }
                 )
             }
 
-            // Results Section
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = "Results",
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 16.sp),
-                    color = MaterialTheme.colorScheme.outline
-                )
+            Spacer(modifier = Modifier.height(30.dp))
 
-                Surface(
+            // Results
+            Column {
+                SectionLabel(text = "Results")
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    Column {
+                    Results.forEachIndexed { index, result ->
                         SearchResultItem(
-                            title = "Payment Methods",
-                            subtitle = "Profile · 2 cards saved",
-                            onClick = { onResultClick("Payment Methods") }
+                            title = result.title,
+                            subtitle = result.subtitle,
+                            onClick = { onResultClick(result.target) }
                         )
-                        HorizontalDivider(color = Color(0x0F000000))
-                        SearchResultItem(
-                            title = "Payment history",
-                            subtitle = "Plan & Subscription",
-                            onClick = { onResultClick("Plan & Subscription") }
-                        )
-                        HorizontalDivider(color = Color(0x0F000000))
-                        SearchResultItem(
-                            title = "Billing address",
-                            subtitle = "Payment Methods",
-                            onClick = { onResultClick("Payment Methods") }
-                        )
+
+                        if (index != Results.lastIndex) {
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)
+                            )
+                        }
                     }
                 }
             }
 
-            // Recent Section
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = "Recent",
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 16.sp),
-                    color = MaterialTheme.colorScheme.outline
-                )
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Recent
+            Column() {
+                SectionLabel(text = "Recent")
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     RecentChips.forEach { chipText ->
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(Color.White)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(MaterialTheme.colorScheme.surface)
                                 .clickable { query = chipText }
-                                .padding(horizontal = 18.dp, vertical = 10.dp)
+                                .padding(horizontal = 16.dp, vertical = 11.dp)
                         ) {
                             Text(
                                 text = chipText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 13.sp,
+                                    lineHeight = 1.24.em,
+                                ),
+                                color = MaterialTheme.colorScheme.onBackground,
+                                maxLines = 1
                             )
                         }
                     }
@@ -189,6 +202,39 @@ fun SearchProfileScreen(
             }
         }
     }
+}
+
+@Composable
+private fun CircleIconButton(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.outline
+    )
 }
 
 @Composable
@@ -201,18 +247,17 @@ private fun SearchResultItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 14.dp)
+            .padding(horizontal = 18.dp, vertical = 16.dp)
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
             color = MaterialTheme.colorScheme.outline
         )
     }
