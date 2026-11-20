@@ -4,13 +4,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 import com.traveo.app.feature.auth.presentation.login.EmailLoginScreen
@@ -93,70 +92,101 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TraveoAppNavigation() {
-    var currentScreen by remember { mutableStateOf(Screen.HOME) }
+    val screenStack = remember { mutableStateListOf(Screen.HOME) }
+    val currentScreen = screenStack.last()
     val context = LocalContext.current
+
+    fun navigateTo(screen: Screen) {
+        screenStack.add(screen)
+    }
+
+    fun popBack() {
+        if (screenStack.size > 1) {
+            screenStack.removeAt(screenStack.lastIndex)
+        }
+    }
+
+    // Intercept System Hardware / Gesture Back Press
+    BackHandler(enabled = screenStack.size > 1) {
+        popBack()
+    }
 
     when (currentScreen) {
         Screen.WELCOME -> {
             WelcomeScreen(
-                onSignInClick = { currentScreen = Screen.LOGIN_PHONE },
-                onGoogleSignInClick = { currentScreen = Screen.HOME }
+                onSignInClick = { navigateTo(Screen.LOGIN_PHONE) },
+                onGoogleSignInClick = {
+                    screenStack.clear()
+                    screenStack.add(Screen.HOME)
+                }
             )
         }
         Screen.LOGIN_PHONE -> {
             LoginScreen(
-                onBackClick = { currentScreen = Screen.WELCOME },
+                onBackClick = { popBack() },
                 onInfoClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://traveo.com"))
                     context.startActivity(intent)
                 },
-                onContinueClick = { dialCode, phoneNumber -> currentScreen = Screen.OTP_PHONE },
-                onGoogleSignInClick = { currentScreen = Screen.HOME },
-                onEmailSignInClick = { currentScreen = Screen.LOGIN_EMAIL }
+                onContinueClick = { dialCode, phoneNumber -> navigateTo(Screen.OTP_PHONE) },
+                onGoogleSignInClick = {
+                    screenStack.clear()
+                    screenStack.add(Screen.HOME)
+                },
+                onEmailSignInClick = { navigateTo(Screen.LOGIN_EMAIL) }
             )
         }
         Screen.LOGIN_EMAIL -> {
             EmailLoginScreen(
-                onBackClick = { currentScreen = Screen.LOGIN_PHONE },
+                onBackClick = { popBack() },
                 onInfoClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://traveo.com"))
                     context.startActivity(intent)
                 },
-                onContinueClick = { email -> currentScreen = Screen.OTP_EMAIL },
-                onGoogleSignInClick = { currentScreen = Screen.HOME },
-                onPhoneSignInClick = { currentScreen = Screen.LOGIN_PHONE }
+                onContinueClick = { email -> navigateTo(Screen.OTP_EMAIL) },
+                onGoogleSignInClick = {
+                    screenStack.clear()
+                    screenStack.add(Screen.HOME)
+                },
+                onPhoneSignInClick = { navigateTo(Screen.LOGIN_PHONE) }
             )
         }
         Screen.OTP_PHONE -> {
             OtpScreen(
                 otpType = OtpType.PHONE,
-                onBackClick = { currentScreen = Screen.LOGIN_PHONE },
+                onBackClick = { popBack() },
                 onInfoClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://traveo.com"))
                     context.startActivity(intent)
                 },
-                onContinueClick = { otpCode -> currentScreen = Screen.HOME }
+                onContinueClick = { otpCode ->
+                    screenStack.clear()
+                    screenStack.add(Screen.HOME)
+                }
             )
         }
         Screen.OTP_EMAIL -> {
             OtpScreen(
                 otpType = OtpType.EMAIL,
-                onBackClick = { currentScreen = Screen.LOGIN_EMAIL },
+                onBackClick = { popBack() },
                 onInfoClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://traveo.com"))
                     context.startActivity(intent)
                 },
-                onContinueClick = { otpCode -> currentScreen = Screen.HOME }
+                onContinueClick = { otpCode ->
+                    screenStack.clear()
+                    screenStack.add(Screen.HOME)
+                }
             )
         }
         Screen.HOME -> {
             MainScreen(
-                onSearchClick = { currentScreen = Screen.SEARCH },
-                onResortClick = { currentScreen = Screen.RESORT_DETAIL },
-                onProfileSearchClick = { currentScreen = Screen.SEARCH_PROFILE },
-                onProfileUpgradeClick = { currentScreen = Screen.UPGRADE_PRO },
+                onSearchClick = { navigateTo(Screen.SEARCH) },
+                onResortClick = { navigateTo(Screen.RESORT_DETAIL) },
+                onProfileSearchClick = { navigateTo(Screen.SEARCH_PROFILE) },
+                onProfileUpgradeClick = { navigateTo(Screen.UPGRADE_PRO) },
                 onProfileSettingClick = { settingName ->
-                    currentScreen = when (settingName) {
+                    val targetScreen = when (settingName) {
                         "Profile Details" -> Screen.EDIT_PROFILE
                         "Settings & Security" -> Screen.SETTINGS_SECURITY
                         "Plan & Subscription" -> Screen.PLAN_SUBSCRIPTION
@@ -166,20 +196,23 @@ fun TraveoAppNavigation() {
                         "Language & Currency" -> Screen.LANGUAGE_CURRENCY
                         "Help & Support" -> Screen.HELP_SUPPORT
                         "Privacy Policy" -> Screen.PRIVACY_POLICY
-                        else -> Screen.HOME
+                        else -> null
+                    }
+                    if (targetScreen != null) {
+                        navigateTo(targetScreen)
                     }
                 }
             )
         }
         Screen.SEARCH -> {
             SearchScreen(
-                onBackClick = { currentScreen = Screen.HOME },
-                onResortClick = { currentScreen = Screen.RESORT_DETAIL }
+                onBackClick = { popBack() },
+                onResortClick = { navigateTo(Screen.RESORT_DETAIL) }
             )
         }
         Screen.RESORT_DETAIL -> {
             ResortDetailScreen(
-                onBackClick = { currentScreen = Screen.HOME },
+                onBackClick = { popBack() },
                 onCallClick = {
                     val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:+62361701888"))
                     context.startActivity(intent)
@@ -189,148 +222,147 @@ fun TraveoAppNavigation() {
         }
         Screen.SEARCH_PROFILE -> {
             SearchProfileScreen(
-                onBackClick = { currentScreen = Screen.HOME },
+                onBackClick = { popBack() },
                 onResultClick = { result ->
-                    currentScreen = when (result) {
-                        "Payment Methods" -> Screen.PAYMENT_METHODS
-                        "Plan & Subscription" -> Screen.PLAN_SUBSCRIPTION
-                        else -> Screen.HOME
+                    when (result) {
+                        "Payment Methods" -> navigateTo(Screen.PAYMENT_METHODS)
+                        "Plan & Subscription" -> navigateTo(Screen.PLAN_SUBSCRIPTION)
                     }
                 }
             )
         }
         Screen.EDIT_PROFILE -> {
             EditProfileScreen(
-                onBackClick = { currentScreen = Screen.HOME },
-                onSaveClick = { currentScreen = Screen.HOME }
+                onBackClick = { popBack() },
+                onSaveClick = { popBack() }
             )
         }
         Screen.UPGRADE_PRO -> {
             UpgradeProScreen(
-                onBackClick = { currentScreen = Screen.HOME },
-                onStartTrialClick = { currentScreen = Screen.HOME }
+                onBackClick = { popBack() },
+                onStartTrialClick = { popBack() }
             )
         }
         Screen.SETTINGS_SECURITY -> {
             SettingsSecurityScreen(
-                onBackClick = { currentScreen = Screen.HOME }
+                onBackClick = { popBack() }
             )
         }
         Screen.PLAN_SUBSCRIPTION -> {
             PlanSubscriptionScreen(
-                onBackClick = { currentScreen = Screen.HOME },
-                onUpgradeClick = { currentScreen = Screen.UPGRADE_PRO },
+                onBackClick = { popBack() },
+                onUpgradeClick = { navigateTo(Screen.UPGRADE_PRO) },
                 onBillingClick = { item ->
-                    if (item == "Payment method") currentScreen = Screen.PAYMENT_METHODS
+                    if (item == "Payment method") navigateTo(Screen.PAYMENT_METHODS)
                 }
             )
         }
         Screen.PASSENGERS_DOCS -> {
             PassengersDocsScreen(
-                onBackClick = { currentScreen = Screen.HOME }
+                onBackClick = { popBack() }
             )
         }
         Screen.TRAVEL_PREFERENCES -> {
             TravelPreferencesScreen(
-                onBackClick = { currentScreen = Screen.HOME }
+                onBackClick = { popBack() }
             )
         }
         Screen.PAYMENT_METHODS -> {
             PaymentMethodsScreen(
-                onBackClick = { currentScreen = Screen.HOME }
+                onBackClick = { popBack() }
             )
         }
         Screen.LANGUAGE_CURRENCY -> {
             LanguageCurrencyScreen(
-                onBackClick = { currentScreen = Screen.HOME }
+                onBackClick = { popBack() }
             )
         }
         Screen.HELP_SUPPORT -> {
             HelpSupportScreen(
-                onBackClick = { currentScreen = Screen.HOME },
-                onPrivacyPolicyClick = { currentScreen = Screen.PRIVACY_POLICY }
+                onBackClick = { popBack() },
+                onPrivacyPolicyClick = { navigateTo(Screen.PRIVACY_POLICY) }
             )
         }
         Screen.PRIVACY_POLICY -> {
             PrivacyPolicyScreen(
-                onBackClick = { currentScreen = Screen.HOME }
+                onBackClick = { popBack() }
             )
         }
         Screen.CREATE_TRIP_DATES -> {
             CreateTripDatesScreen(
-                onBackClick = { currentScreen = Screen.HOME },
-                onContinueClick = { currentScreen = Screen.CREATE_TRIP_CITIES }
+                onBackClick = { popBack() },
+                onContinueClick = { navigateTo(Screen.CREATE_TRIP_CITIES) }
             )
         }
         Screen.CREATE_TRIP_CITIES -> {
             CreateTripCitiesScreen(
-                onBackClick = { currentScreen = Screen.CREATE_TRIP_DATES },
-                onContinueClick = { currentScreen = Screen.INVITE_FRIENDS }
+                onBackClick = { popBack() },
+                onContinueClick = { navigateTo(Screen.INVITE_FRIENDS) }
             )
         }
         Screen.INVITE_FRIENDS -> {
             InviteFriendsScreen(
-                onBackClick = { currentScreen = Screen.CREATE_TRIP_CITIES },
-                onDoneClick = { currentScreen = Screen.TRIP_DETAIL }
+                onBackClick = { popBack() },
+                onDoneClick = { navigateTo(Screen.TRIP_DETAIL) }
             )
         }
         Screen.TRIP_DETAIL -> {
             TripDetailScreen(
-                onBackClick = { currentScreen = Screen.HOME },
-                onMembersClick = { currentScreen = Screen.TRIP_MEMBERS },
-                onAddExpenseClick = { currentScreen = Screen.ADD_EXPENSE },
-                onAddEventClick = { currentScreen = Screen.ADD_TRANSPORT },
-                onEventClick = { currentScreen = Screen.EVENT_DETAIL }
+                onBackClick = { popBack() },
+                onMembersClick = { navigateTo(Screen.TRIP_MEMBERS) },
+                onAddExpenseClick = { navigateTo(Screen.ADD_EXPENSE) },
+                onAddEventClick = { navigateTo(Screen.ADD_TRANSPORT) },
+                onEventClick = { navigateTo(Screen.EVENT_DETAIL) }
             )
         }
         Screen.TRIP_MEMBERS -> {
             TripMembersScreen(
-                onBackClick = { currentScreen = Screen.TRIP_DETAIL },
-                onInviteMoreClick = { currentScreen = Screen.INVITE_FRIENDS }
+                onBackClick = { popBack() },
+                onInviteMoreClick = { navigateTo(Screen.INVITE_FRIENDS) }
             )
         }
         Screen.TRIP_BUDGET -> {
             TripBudgetScreen(
-                onBackClick = { currentScreen = Screen.TRIP_DETAIL },
-                onAddExpenseClick = { currentScreen = Screen.ADD_EXPENSE }
+                onBackClick = { popBack() },
+                onAddExpenseClick = { navigateTo(Screen.ADD_EXPENSE) }
             )
         }
         Screen.ADD_EXPENSE -> {
             AddExpenseScreen(
-                onBackClick = { currentScreen = Screen.TRIP_DETAIL },
-                onAddExpenseClick = { currentScreen = Screen.TRIP_DETAIL }
+                onBackClick = { popBack() },
+                onAddExpenseClick = { popBack() }
             )
         }
         Screen.TRIP_TIMELINE -> {
             TripTimelineScreen(
-                onBackClick = { currentScreen = Screen.TRIP_DETAIL },
-                onAddEventClick = { currentScreen = Screen.ADD_TRANSPORT },
-                onEventClick = { currentScreen = Screen.EVENT_DETAIL }
+                onBackClick = { popBack() },
+                onAddEventClick = { navigateTo(Screen.ADD_TRANSPORT) },
+                onEventClick = { navigateTo(Screen.EVENT_DETAIL) }
             )
         }
         Screen.TRIP_MAP -> {
             TripMapScreen(
-                onBackClick = { currentScreen = Screen.TRIP_DETAIL },
-                onBuildRouteClick = { currentScreen = Screen.EVENT_DETAIL }
+                onBackClick = { popBack() },
+                onBuildRouteClick = { navigateTo(Screen.EVENT_DETAIL) }
             )
         }
         Screen.ADD_TRANSPORT -> {
             AddTransportScreen(
-                onBackClick = { currentScreen = Screen.TRIP_DETAIL },
-                onAddClick = { currentScreen = Screen.TRIP_DETAIL }
+                onBackClick = { popBack() },
+                onAddClick = { popBack() }
             )
         }
         Screen.EVENT_DETAIL -> {
             EventDetailScreen(
-                onBackClick = { currentScreen = Screen.TRIP_DETAIL },
-                onHowToGetThereClick = { currentScreen = Screen.DIRECTIONS },
-                onEditEventClick = { currentScreen = Screen.ADD_TRANSPORT }
+                onBackClick = { popBack() },
+                onHowToGetThereClick = { navigateTo(Screen.DIRECTIONS) },
+                onEditEventClick = { navigateTo(Screen.ADD_TRANSPORT) }
             )
         }
         Screen.DIRECTIONS -> {
             DirectionsScreen(
-                onBackClick = { currentScreen = Screen.EVENT_DETAIL },
-                onSaveToTripClick = { currentScreen = Screen.TRIP_DETAIL }
+                onBackClick = { popBack() },
+                onSaveToTripClick = { popBack() }
             )
         }
     }
