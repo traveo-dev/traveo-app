@@ -93,7 +93,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TraveoAppNavigation() {
-    var currentScreen by remember { mutableStateOf(Screen.WELCOME) }
+    var currentScreen by remember { mutableStateOf(Screen.HOME) }
     val context = LocalContext.current
 
     when (currentScreen) {
