@@ -37,6 +37,8 @@ private val MainNavItems = listOf(
 fun MainScreen(
     onSearchClick: () -> Unit = {},
     onResortClick: () -> Unit = {},
+    onAddTripClick: () -> Unit = {},
+    onTripDetailClick: () -> Unit = {},
     onProfileSearchClick: () -> Unit = {},
     onProfileUpgradeClick: () -> Unit = {},
     onProfileSettingClick: (String) -> Unit = {}
@@ -52,7 +54,11 @@ fun MainScreen(
                     onResortClick = onResortClick
                 )
                 1 -> FinanceScreen()
-                2 -> MyTripsScreen()
+                2 -> MyTripsScreen(
+                    onSearchClick = onSearchClick,
+                    onTripClick = onTripDetailClick,
+                    onAddTripClick = onAddTripClick
+                )
                 3 -> ProfileScreen(
                     onSearchClick = onProfileSearchClick,
                     onUpgradeClick = onProfileUpgradeClick,

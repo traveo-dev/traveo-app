@@ -183,6 +183,8 @@ fun TraveoAppNavigation() {
             MainScreen(
                 onSearchClick = { navigateTo(Screen.SEARCH) },
                 onResortClick = { navigateTo(Screen.RESORT_DETAIL) },
+                onAddTripClick = { navigateTo(Screen.CREATE_TRIP_DATES) },
+                onTripDetailClick = { navigateTo(Screen.TRIP_DETAIL) },
                 onProfileSearchClick = { navigateTo(Screen.SEARCH_PROFILE) },
                 onProfileUpgradeClick = { navigateTo(Screen.UPGRADE_PRO) },
                 onProfileSettingClick = { settingName ->

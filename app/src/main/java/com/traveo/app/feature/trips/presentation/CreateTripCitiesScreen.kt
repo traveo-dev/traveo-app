@@ -202,7 +202,7 @@ fun CreateTripCitiesScreen(
                                     .clip(RoundedCornerShape(50))
                                     .background(MaterialTheme.colorScheme.surface)
                                     .clickable { }
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(

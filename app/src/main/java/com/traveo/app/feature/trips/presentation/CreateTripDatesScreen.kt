@@ -249,6 +249,7 @@ fun CreateTripDatesScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onBackground
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "8 days · 7 nights",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
