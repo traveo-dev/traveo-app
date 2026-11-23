@@ -7,10 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -35,6 +31,8 @@ private val MainNavItems = listOf(
 
 @Composable
 fun MainScreen(
+    selectedTab: Int = 0,
+    onTabSelected: (Int) -> Unit = {},
     onSearchClick: () -> Unit = {},
     onResortClick: () -> Unit = {},
     onAddTripClick: () -> Unit = {},
@@ -43,8 +41,6 @@ fun MainScreen(
     onProfileUpgradeClick: () -> Unit = {},
     onProfileSettingClick: (String) -> Unit = {}
 ) {
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
-
     Box(modifier = Modifier.fillMaxSize()) {
         // Active Screen Content
         Box(modifier = Modifier.fillMaxSize()) {
@@ -86,7 +82,7 @@ fun MainScreen(
             FloatingNavBar(
                 items = MainNavItems,
                 selectedIndex = selectedTab,
-                onItemSelected = { selectedTab = it }
+                onItemSelected = onTabSelected
             )
         }
     }

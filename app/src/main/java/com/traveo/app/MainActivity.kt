@@ -8,8 +8,12 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 import com.traveo.app.feature.auth.presentation.login.EmailLoginScreen
@@ -92,6 +96,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TraveoAppNavigation() {
+    var mainSelectedTab by rememberSaveable { mutableIntStateOf(0) }
     val screenStack = remember { mutableStateListOf(Screen.HOME) }
     val currentScreen = screenStack.last()
     val context = LocalContext.current
@@ -181,6 +186,8 @@ fun TraveoAppNavigation() {
         }
         Screen.HOME -> {
             MainScreen(
+                selectedTab = mainSelectedTab,
+                onTabSelected = { mainSelectedTab = it },
                 onSearchClick = { navigateTo(Screen.SEARCH) },
                 onResortClick = { navigateTo(Screen.RESORT_DETAIL) },
                 onAddTripClick = { navigateTo(Screen.CREATE_TRIP_DATES) },
