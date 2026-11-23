@@ -1,5 +1,6 @@
 package com.traveo.app.feature.profile.presentation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,15 +11,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -43,209 +46,150 @@ fun PlanSubscriptionScreen(
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .navigationBarsPadding()
+                .padding(16.dp),
         ) {
-            // Top Bar Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+            // Header
+            Box(modifier = Modifier.fillMaxWidth()) {
+                CircleIconButton(
+                    iconRes = R.drawable.ic_arrow_back,
+                    contentDescription = "Back",
+                    onClick = onBackClick,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
 
                 Text(
                     text = "Plan & Subscription",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W400
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.align(Alignment.Center)
                 )
-
-                Spacer(modifier = Modifier.size(44.dp))
             }
 
-            // Current Plan Banner Card
-            Box(
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // Current plan banner
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(24.dp))
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable(onClick = onUpgradeClick)
-                    .padding(20.dp)
+                    .padding(22.dp)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Free plan",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.W500
+                        ),
+                        color = Color.White
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.White.copy(alpha = 0.2f))
+                            .padding(horizontal = 9.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "Free plan",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(Color.White.copy(alpha = 0.25f))
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "Current",
+                            text = "Current",
+                            style = MaterialTheme.typography.bodyMedium.copy(
                                 fontSize = 11.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
+                                fontWeight = FontWeight.Medium,
+                            ),
+                            color = Color.White,
+                            maxLines = 1
+                        )
                     }
+                }
 
-                    Text(
-                        text = "Standard fares, paid cancellation, support within 24 hours.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 12.sp
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    text = "Standard fares, paid cancellation, support within 24 hours.",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 14.sp,
+                        lineHeight = 21.sp
+                    ),
+                    color = Color.White.copy(alpha = 0.85f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // This year
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                SectionLabel(text = "This year")
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    StatCard(
+                        value = "14",
+                        label = "Trips booked",
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        value = "$312",
+                        label = "You could have saved",
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
 
-            // Stats Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "This year",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
+            Spacer(modifier = Modifier.height(20.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(20.dp)),
-                        color = Color.White,
-                        shadowElevation = 2.dp
-                    ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
-                            Text(
-                                text = "14",
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                text = "Trips booked",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray,
-                                fontSize = 11.sp
-                            )
-                        }
-                    }
+            // Billing
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                SectionLabel(text = "Billing")
 
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(20.dp)),
-                        color = Color.White,
-                        shadowElevation = 2.dp
-                    ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
-                            Text(
-                                text = "$312",
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                text = "You could have saved",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray,
-                                fontSize = 11.sp
-                            )
-                        }
-                    }
+                SettingsCard {
+                    NavigationRow(
+                        title = "Payment method",
+                        value = "Visa ··4821",
+                        onClick = { onBillingClick("Payment method") }
+                    )
+                    RowDivider()
+                    NavigationRow(
+                        title = "Payment history",
+                        onClick = { onBillingClick("Payment history") }
+                    )
+                    RowDivider()
+                    NavigationRow(
+                        title = "Redeem a promo code",
+                        onClick = { onBillingClick("Redeem a promo code") }
+                    )
                 }
             }
 
-            // Billing Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Billing",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
-                ) {
-                    Column {
-                        SubscriptionRow(
-                            title = "Payment method",
-                            subtitle = "Visa ··4821",
-                            onClick = { onBillingClick("Payment method") }
-                        )
-                        HorizontalDivider(color = Color(0x0F000000))
-                        SubscriptionRow(
-                            title = "Payment history",
-                            onClick = { onBillingClick("Payment history") }
-                        )
-                        HorizontalDivider(color = Color(0x0F000000))
-                        SubscriptionRow(
-                            title = "Redeem a promo code",
-                            onClick = { onBillingClick("Redeem a promo code") }
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Receipts Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Receipts",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
+            // Receipts
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                SectionLabel(text = "Receipts")
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
-                ) {
-                    Column {
-                        ReceiptRow(title = "Kyiv → Warsaw", date = "12 Aug 2026 · Visa ··4821", price = "$128.40")
-                        HorizontalDivider(color = Color(0x0F000000))
-                        ReceiptRow(title = "Hotel Lumen, Vienna", date = "2 Aug 2026 · Apple Pay", price = "$243.00")
-                        HorizontalDivider(color = Color(0x0F000000))
-                        ReceiptRow(title = "Warsaw → Kyiv", date = "28 Jul 2026 · Visa ··4821", price = "$116.90")
-                    }
+                SettingsCard {
+                    ReceiptRow(title = "Kyiv → Warsaw", date = "12 Aug 2026 · Visa ··4821", price = "$128.40")
+                    RowDivider()
+                    ReceiptRow(title = "Hotel Lumen, Vienna", date = "2 Aug 2026 · Apple Pay", price = "$243.00")
+                    RowDivider()
+                    ReceiptRow(title = "Warsaw → Kyiv", date = "28 Jul 2026 · Visa ··4821", price = "$116.90")
                 }
             }
         }
@@ -253,42 +197,122 @@ fun PlanSubscriptionScreen(
 }
 
 @Composable
-private fun SubscriptionRow(
+private fun CircleIconButton(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.outline
+    )
+}
+
+@Composable
+private fun SettingsCard(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun RowDivider() {
+    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+}
+
+@Composable
+private fun StatCard(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(18.dp)
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 24.sp,
+                lineHeight = 28.sp,
+                fontWeight = FontWeight.W500
+            ),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+            color = MaterialTheme.colorScheme.outline,
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
+private fun NavigationRow(
     title: String,
-    subtitle: String? = null,
+    value: String? = null,
     onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 18.dp, vertical = 17.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onBackground
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.weight(1f)
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
-            }
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chevron_right),
-                contentDescription = "Open",
-                tint = Color.LightGray,
-                modifier = Modifier.size(18.dp)
+        if (value != null) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1
             )
+            Spacer(modifier = Modifier.width(8.dp))
         }
+
+        Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_right),
+            contentDescription = "Open",
+            tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }
 
@@ -302,29 +326,27 @@ private fun ReceiptRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = date,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                fontSize = 11.sp
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline
             )
         }
 
+        Spacer(modifier = Modifier.width(12.dp))
+
         Text(
             text = price,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W500),
             color = MaterialTheme.colorScheme.onBackground
         )
     }
