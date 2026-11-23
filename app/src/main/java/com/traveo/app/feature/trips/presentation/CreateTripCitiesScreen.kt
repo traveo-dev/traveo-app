@@ -1,33 +1,31 @@
 package com.traveo.app.feature.trips.presentation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,9 +46,20 @@ import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
+private data class CityStop(
+    val name: String,
+    val country: String,
+    val nights: String
+)
+
+private val SelectedCities = listOf(
+    CityStop("Warsaw", "Poland", "2 nights"),
+    CityStop("Kraków", "Poland", "4 nights"),
+    CityStop("Zakopane", "Poland", "2 nights")
+)
+
 private val PopularStops = listOf("Wrocław", "Gdańsk", "Poznań", "Łódź")
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CreateTripCitiesScreen(
     onBackClick: () -> Unit = {},
@@ -59,225 +69,312 @@ fun CreateTripCitiesScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Top Bar
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
             ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                // Header
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    CircleIconButton(
+                        iconRes = R.drawable.ic_arrow_back,
                         contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onBackClick,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+
+                    Text(
+                        text = "New trip",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.W400
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.align(Alignment.Center)
                     )
                 }
 
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Heading
                 Text(
-                    text = "New trip",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    text = "Where are you\ngoing?",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontSize = 36.sp,
+                        lineHeight = 42.sp,
+                        fontWeight = FontWeight.Normal
+                    ),
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                Spacer(modifier = Modifier.size(44.dp))
-            }
+                Spacer(modifier = Modifier.height(20.dp))
 
-            // Title Heading
-            Text(
-                text = "Where are you\ngoing?",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 32.sp,
-                lineHeight = 38.sp
-            )
+                // Search field
+                BasicTextField(
+                    value = searchCity,
+                    onValueChange = { searchCity = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.surface),
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    decorationBox = { innerTextField ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_search),
+                                contentDescription = "Search",
+                                tint = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.size(20.dp)
+                            )
 
-            // Search Field
-            OutlinedTextField(
-                value = searchCity,
-                onValueChange = { searchCity = it },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Add a city or place") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_search),
-                        contentDescription = "Search",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(20.dp)
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(50),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                ),
-                textStyle = MaterialTheme.typography.bodyLarge
-            )
+                            Spacer(modifier = Modifier.width(12.dp))
 
-            // Selected Destinations List Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp)),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
-                Column {
-                    CityItemRow(number = "1", name = "Warsaw", country = "Poland", nights = "2 nights")
-                    HorizontalDivider(color = Color(0x0F000000))
-                    CityItemRow(number = "2", name = "Kraków", country = "Poland", nights = "4 nights")
-                    HorizontalDivider(color = Color(0x0F000000))
-                    CityItemRow(number = "3", name = "Zakopane", country = "Poland", nights = "2 nights")
-                }
-            }
-
-            // Popular next stops Section
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "Popular next stops",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                if (searchCity.isEmpty()) {
+                                    Text(
+                                        text = "Add a city or place",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.outline,
+                                        maxLines = 1
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
+                    }
                 )
 
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Selected destinations
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    PopularStops.forEach { stop ->
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(Color.White)
-                                .clickable { }
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                        ) {
-                            Text(
-                                text = "+  $stop",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Medium
+                    SelectedCities.forEachIndexed { index, city ->
+                        CityRow(number = index + 1, city = city)
+
+                        if (index != SelectedCities.lastIndex) {
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)
                             )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Popular next stops
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Popular next stops",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(PopularStops) { stop ->
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(50))
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .clickable { }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_add),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stop,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.outline,
+                                    maxLines = 1
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Pagination Dots & Continue Button
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color.LightGray))
-                    Box(modifier = Modifier.size(24.dp, 6.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
-                    Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(Color.LightGray))
-                }
-
-                Button(
-                    onClick = onContinueClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(
-                        text = "Continue",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Color.White
-                    )
-                }
-            }
+            TripStepFooter(activeIndex = 1, onContinueClick = onContinueClick)
         }
     }
 }
 
 @Composable
-private fun CityItemRow(
-    number: String,
-    name: String,
-    country: String,
-    nights: String
+private fun CityRow(
+    number: Int,
+    city: CityStop
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(30.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = number.toString(),
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = city.name,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = city.country,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = city.nights,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1
+            )
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        DragHandle()
+    }
+}
+
+/** Three thin lines, drawn with boxes so no extra drawable is needed. */
+@Composable
+private fun DragHandle() {
+    Column(
+        modifier = Modifier.size(20.dp),
+        verticalArrangement = Arrangement.spacedBy(2.5.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        repeat(3) {
             Box(
                 modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFE3F2FD)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = number,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+                    .width(10.dp)
+                    .height(1.5.dp)
+                    .background(MaterialTheme.colorScheme.outline)
+            )
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = country,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
+@Composable
+private fun TripStepFooter(
+    activeIndex: Int,
+    onContinueClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            repeat(3) { index ->
+                val active = index == activeIndex
+                Box(
+                    modifier = Modifier
+                        .size(width = if (active) 24.dp else 6.dp, height = 6.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (active) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+                        )
                 )
             }
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Text(
-                    text = nights,
-                    fontSize = 11.sp,
-                    color = Color.Gray
-                )
-            }
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(text = "≡", fontSize = 18.sp, color = Color.LightGray)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(58.dp)
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.primary)
+                .clickable(onClick = onContinueClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Continue",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
+            )
         }
+    }
+}
+
+@Composable
+private fun CircleIconButton(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
+        )
     }
 }
 

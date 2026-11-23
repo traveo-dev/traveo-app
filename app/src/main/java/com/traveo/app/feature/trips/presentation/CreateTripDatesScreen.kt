@@ -111,7 +111,8 @@ fun CreateTripDatesScreen(
                     text = "When are you\ngoing?",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontSize = 36.sp,
-                        lineHeight = 42.sp
+                        lineHeight = 42.sp,
+                        fontWeight = FontWeight.W400
                     ),
                     color = MaterialTheme.colorScheme.onBackground
                 )
