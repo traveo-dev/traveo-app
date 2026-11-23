@@ -1,25 +1,27 @@
 package com.traveo.app.feature.profile.presentation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -42,6 +44,34 @@ import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
+private data class PolicySection(
+    val title: String,
+    val body: String
+)
+
+private val PolicySections = listOf(
+    PolicySection(
+        title = "1. Data we collect",
+        body = "Account details you enter (name, email, phone), passenger and document data you save for bookings, payment tokens from our payment provider, and technical data about the device you use the app on."
+    ),
+    PolicySection(
+        title = "2. How we use it",
+        body = "To create bookings with airlines and hotels, to process payments and refunds, to send trip updates, and to keep your account secure. With your consent we also send price alerts and offers."
+    ),
+    PolicySection(
+        title = "3. Sharing",
+        body = "We share only what a partner needs to fulfil your booking — for example passenger names and document numbers with the airline. We never sell personal data."
+    ),
+    PolicySection(
+        title = "4. Storage and retention",
+        body = "Data is stored encrypted in the EU. Booking records are kept for 7 years to meet accounting rules; saved documents are deleted as soon as you remove them."
+    ),
+    PolicySection(
+        title = "5. Your rights",
+        body = "You can access, correct, export or delete your data at any time from Settings & Security, or by writing to privacy@example.com."
+    )
+)
+
 @Composable
 fun PrivacyPolicyScreen(
     onBackClick: () -> Unit = {},
@@ -53,197 +83,160 @@ fun PrivacyPolicyScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .navigationBarsPadding()
+                .padding(16.dp),
         ) {
-            // Top Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+            // Header
+            Box(modifier = Modifier.fillMaxWidth()) {
+                CircleIconButton(
+                    iconRes = R.drawable.ic_arrow_back,
+                    contentDescription = "Back",
+                    onClick = onBackClick,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
 
                 Text(
                     text = "Privacy Policy",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W400
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // Version info
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(20.dp)
+            ) {
+                Text(
+                    text = "Version 4.2",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onBackground
                 )
-
-                Spacer(modifier = Modifier.size(44.dp))
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Last updated 12 June 2026",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                    color = MaterialTheme.colorScheme.outline
+                )
             }
 
-            // Version Info Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp)),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = "Version 4.2",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Last updated 12 June 2026",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Policy Articles Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp)),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    PolicyArticle(
-                        title = "1. Data we collect",
-                        body = "Account details you enter (name, email, phone), passenger and document data you save for bookings, payment tokens from our payment provider, and technical data about the device you use the app on."
-                    )
-                    PolicyArticle(
-                        title = "2. How we use it",
-                        body = "To create bookings with airlines and hotels, to process payments and refunds, to send trip updates, and to keep your account secure. With your consent we also send price alerts and offers."
-                    )
-                    PolicyArticle(
-                        title = "3. Sharing",
-                        body = "We share only what a partner needs to fulfil your booking — for example passenger names and document numbers with the airline. We never sell personal data."
-                    )
-                    PolicyArticle(
-                        title = "4. Storage and retention",
-                        body = "Data is stored encrypted in the EU. Booking records are kept for 7 years to meet accounting rules; saved documents are deleted as soon as you remove them."
-                    )
-                    PolicyArticle(
-                        title = "5. Your rights",
-                        body = "You can access, correct, export or delete your data at any time from Settings & Security, or by writing to privacy@example.com."
-                    )
-                }
-            }
-
-            // Toggles Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp)),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
-                Column {
-                    PrivacyToggleRow(
-                        title = "Analytics",
-                        subtitle = "Help us improve the app",
-                        checked = analyticsEnabled,
-                        onCheckedChange = { analyticsEnabled = it }
-                    )
-                    HorizontalDivider(color = Color(0x0F000000))
-                    PrivacyToggleRow(
-                        title = "Personalised offers",
-                        subtitle = "Based on your trip history",
-                        checked = personalisedOffersEnabled,
-                        onCheckedChange = { personalisedOffersEnabled = it }
-                    )
-                }
-            }
-
-            // Action Buttons
+            // Policy text
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                Button(
-                    onClick = onDownloadDataClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
-                ) {
-                    Text(
-                        text = "Download my data",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                PolicySections.forEach { section ->
+                    Column {
+                        Text(
+                            text = section.title,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Medium,
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = section.body,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                lineHeight = 22.sp,
+                                fontSize = 13.sp,
+                            ),
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
+            }
 
-                Button(
-                    onClick = onDeleteAccountClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp)
-                ) {
-                    Text(
-                        text = "Delete my account",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFFE53935)
-                    )
-                }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Toggles
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                ToggleRow(
+                    title = "Analytics",
+                    subtitle = "Help us improve the app",
+                    checked = analyticsEnabled,
+                    onCheckedChange = { analyticsEnabled = it }
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+                ToggleRow(
+                    title = "Personalised offers",
+                    subtitle = "Based on your trip history",
+                    checked = personalisedOffersEnabled,
+                    onCheckedChange = { personalisedOffersEnabled = it }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Actions
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PillButton(
+                    text = "Download my data",
+                    textColor = MaterialTheme.colorScheme.onBackground,
+                    onClick = onDownloadDataClick
+                )
+                PillButton(
+                    text = "Delete my account",
+                    textColor = MaterialTheme.colorScheme.error,
+                    onClick = onDeleteAccountClick
+                )
             }
         }
     }
 }
 
 @Composable
-private fun PolicyArticle(title: String, body: String) {
-    Column {
+private fun PillButton(
+    text: String,
+    textColor: Color,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .clip(RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
         Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = body,
+            text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray,
-            fontSize = 13.sp,
-            lineHeight = 18.sp
+            color = textColor
         )
     }
 }
 
 @Composable
-private fun PrivacyToggleRow(
+private fun ToggleRow(
     title: String,
     subtitle: String,
     checked: Boolean,
@@ -252,33 +245,64 @@ private fun PrivacyToggleRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 18.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                fontSize = 12.sp
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline
             )
         }
 
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = MaterialTheme.colorScheme.primary
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // Fixed 32dp height so Switch's 48dp touch target doesn't inflate the row
+        Box(modifier = Modifier.height(32.dp), contentAlignment = Alignment.Center) {
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                thumbContent = {}, // keeps the thumb at 24dp in the unchecked state too
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    checkedBorderColor = Color.Transparent,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.12f),
+                    uncheckedBorderColor = Color.Transparent
+                )
             )
+        }
+    }
+}
+
+@Composable
+private fun CircleIconButton(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
         )
     }
 }

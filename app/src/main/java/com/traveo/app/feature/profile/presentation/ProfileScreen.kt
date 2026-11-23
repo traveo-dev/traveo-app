@@ -78,7 +78,7 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp), // Bottom padding so content is never cut off by floating bottom nav
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 150.dp), // Bottom padding so content is never cut off by floating bottom nav
         ) {
             // Header
             Box(

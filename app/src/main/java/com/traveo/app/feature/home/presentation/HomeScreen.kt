@@ -71,7 +71,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = 16.dp)
-                .padding(bottom = 100.dp) // Bottom padding so content is never cut off by floating bottom nav
+                .padding(bottom = 150.dp) // Bottom padding so content is never cut off by floating bottom nav
         ) {
             // Top Header
             Row(
