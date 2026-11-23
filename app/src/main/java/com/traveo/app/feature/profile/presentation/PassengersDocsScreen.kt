@@ -166,7 +166,7 @@ fun PassengersDocsScreen(
                     painter = painterResource(id = R.drawable.ic_add),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(24.dp)
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
