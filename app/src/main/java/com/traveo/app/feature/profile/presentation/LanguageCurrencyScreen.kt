@@ -1,26 +1,29 @@
 package com.traveo.app.feature.profile.presentation
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,19 +43,29 @@ import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
+private data class LanguageOption(
+    val name: String,
+    val nativeName: String
+)
+
+private data class CurrencyOption(
+    val symbol: String,
+    val name: String
+)
+
 private val Languages = listOf(
-    "English" to "English",
-    "Ukrainian" to "Ukranian",
-    "German" to "Deutsch",
-    "Spanish" to "Español",
-    "French" to "Français"
+    LanguageOption("English", "English"),
+    LanguageOption("Ukrainian", "Українська"),
+    LanguageOption("German", "Deutsch"),
+    LanguageOption("Spanish", "Español"),
+    LanguageOption("French", "Français")
 )
 
 private val Currencies = listOf(
-    "$ US Dollar",
-    "€ Euro",
-    "₴ Ukrainian Hryvnia",
-    "£ British Pound"
+    CurrencyOption("$", "US Dollar"),
+    CurrencyOption("€", "Euro"),
+    CurrencyOption("₴", "Ukrainian Hryvnia"),
+    CurrencyOption("£", "British Pound")
 )
 
 @Composable
@@ -64,181 +77,125 @@ fun LanguageCurrencyScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .navigationBarsPadding()
+                .padding(16.dp),
         ) {
-            // Top Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+            // Header
+            Box(modifier = Modifier.fillMaxWidth()) {
+                CircleIconButton(
+                    iconRes = R.drawable.ic_arrow_back,
+                    contentDescription = "Back",
+                    onClick = onBackClick,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
 
                 Text(
                     text = "Language & Currency",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W400
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.align(Alignment.Center)
                 )
-
-                Spacer(modifier = Modifier.size(44.dp))
             }
 
-            // App Language Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "App language",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
+            Spacer(modifier = Modifier.height(30.dp))
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
-                ) {
-                    Column {
-                        Languages.forEachIndexed { index, (langName, nativeName) ->
-                            val isSelected = selectedLanguageIndex == index
+            // App language
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                SectionLabel(text = "App language")
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { selectedLanguageIndex = index }
-                                    .padding(horizontal = 20.dp, vertical = 14.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        text = langName,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onBackground
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = nativeName,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.Gray,
-                                        fontSize = 12.sp
-                                    )
-                                }
-
-                                RadioButton(
-                                    selected = isSelected,
-                                    onClick = { selectedLanguageIndex = index },
-                                    colors = RadioButtonDefaults.colors(
-                                        selectedColor = MaterialTheme.colorScheme.primary,
-                                        unselectedColor = Color.LightGray
-                                    )
-                                )
-                            }
-
-                            if (index < Languages.lastIndex) {
-                                HorizontalDivider(color = Color(0x0F000000))
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Currency Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Currency",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
-
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
-                ) {
-                    Column {
-                        Currencies.forEachIndexed { index, currencyName ->
-                            val isSelected = selectedCurrencyIndex == index
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { selectedCurrencyIndex = index }
-                                    .padding(horizontal = 20.dp, vertical = 14.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                SettingsCard {
+                    Languages.forEachIndexed { index, language ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { selectedLanguageIndex = index }
+                                .padding(horizontal = 18.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = currencyName,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.SemiBold,
+                                    text = language.name,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
-
-                                RadioButton(
-                                    selected = isSelected,
-                                    onClick = { selectedCurrencyIndex = index },
-                                    colors = RadioButtonDefaults.colors(
-                                        selectedColor = MaterialTheme.colorScheme.primary,
-                                        unselectedColor = Color.LightGray
-                                    )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = language.nativeName,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                    color = MaterialTheme.colorScheme.outline
                                 )
                             }
 
-                            if (index < Currencies.lastIndex) {
-                                HorizontalDivider(color = Color(0x0F000000))
-                            }
+                            SelectionIndicator(selected = selectedLanguageIndex == index)
                         }
+
+                        if (index != Languages.lastIndex) RowDivider()
                     }
                 }
             }
 
-            // Formats Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Formats",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
+            Spacer(modifier = Modifier.height(20.dp))
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
-                ) {
-                    Column {
-                        FormatRow(title = "Date format", value = "DD.MM.YYYY")
-                        HorizontalDivider(color = Color(0x0F000000))
-                        FormatRow(title = "Time format", value = "24-hour")
-                        HorizontalDivider(color = Color(0x0F000000))
-                        FormatRow(title = "Units", value = "Metric · km")
+            // Currency
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                SectionLabel(text = "Currency")
+
+                SettingsCard {
+                    Currencies.forEachIndexed { index, currency ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { selectedCurrencyIndex = index }
+                                .padding(horizontal = 18.dp, vertical = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = currency.symbol,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium,
+                                ),
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.width(40.dp)
+                            )
+
+                            Text(
+                                text = currency.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            SelectionIndicator(selected = selectedCurrencyIndex == index)
+                        }
+
+                        if (index != Currencies.lastIndex) RowDivider()
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Formats
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SectionLabel(text = "Formats")
+
+                SettingsCard {
+                    NavigationRow(title = "Date format", value = "DD.MM.YYYY")
+                    RowDivider()
+                    NavigationRow(title = "Time format", value = "24-hour")
+                    RowDivider()
+                    NavigationRow(title = "Units", value = "Metric · km")
                 }
             }
         }
@@ -246,41 +203,118 @@ fun LanguageCurrencyScreen(
 }
 
 @Composable
-private fun FormatRow(
+private fun SelectionIndicator(selected: Boolean) {
+    if (selected) {
+        Box(
+            modifier = Modifier
+                .size(22.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_check),
+                contentDescription = "Selected",
+                tint = Color.White,
+                modifier = Modifier.size(14.dp)
+            )
+        }
+    } else {
+        Box(
+            modifier = Modifier
+                .size(22.dp)
+                .border(1.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), CircleShape)
+        )
+    }
+}
+
+@Composable
+private fun NavigationRow(
     title: String,
-    value: String
+    value: String? = null,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onBackground
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.weight(1f)
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        if (value != null) {
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                fontSize = 12.sp
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1
             )
-            Spacer(modifier = Modifier.width(6.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chevron_right),
-                contentDescription = "Details",
-                tint = Color.LightGray,
-                modifier = Modifier.size(18.dp)
-            )
+            Spacer(modifier = Modifier.width(8.dp))
         }
+
+        Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_right),
+            contentDescription = "Open",
+            tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.size(18.dp)
+        )
     }
+}
+
+@Composable
+private fun CircleIconButton(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.outline
+    )
+}
+
+@Composable
+private fun SettingsCard(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun RowDivider() {
+    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
 }
 
 @Preview(showBackground = true, showSystemUi = true)
