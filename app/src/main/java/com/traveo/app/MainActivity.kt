@@ -30,7 +30,6 @@ import com.traveo.app.feature.profile.presentation.PrivacyPolicyScreen
 import com.traveo.app.feature.profile.presentation.SearchProfileScreen
 import com.traveo.app.feature.profile.presentation.SettingsSecurityScreen
 import com.traveo.app.feature.profile.presentation.TravelPreferencesScreen
-import com.traveo.app.feature.profile.presentation.UpgradeProScreen
 import com.traveo.app.feature.trips.presentation.AddExpenseScreen
 import com.traveo.app.feature.trips.presentation.AddTransportScreen
 import com.traveo.app.feature.trips.presentation.CreateTripCitiesScreen
@@ -238,9 +237,9 @@ fun TraveoAppNavigation() {
             )
         }
         Screen.UPGRADE_PRO -> {
-            UpgradeProScreen(
+            PlanSubscriptionScreen(
                 onBackClick = { popBack() },
-                onStartTrialClick = { popBack() }
+//                onStartTrialClick = { popBack() }
             )
         }
         Screen.SETTINGS_SECURITY -> {
@@ -252,9 +251,9 @@ fun TraveoAppNavigation() {
             PlanSubscriptionScreen(
                 onBackClick = { popBack() },
                 onUpgradeClick = { navigateTo(Screen.UPGRADE_PRO) },
-                onBillingClick = { item ->
-                    if (item == "Payment method") navigateTo(Screen.PAYMENT_METHODS)
-                }
+//                onBillingClick = { item ->
+//                    if (item == "Payment method") navigateTo(Screen.PAYMENT_METHODS)
+//                }
             )
         }
         Screen.PASSENGERS_DOCS -> {
