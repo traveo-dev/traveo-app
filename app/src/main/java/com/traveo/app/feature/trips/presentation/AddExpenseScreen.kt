@@ -1,7 +1,8 @@
 package com.traveo.app.feature.trips.presentation
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,11 +23,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,7 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,8 +47,43 @@ import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
-private val ExpenseCategories = listOf("🍽️ Food", "🚆 Transport", "🏠 Stay", "🎫 Tickets")
+private data class ExpenseCategory(
+    @DrawableRes val iconRes: Int,
+    val name: String
+)
+
+private data class ExpenseDetail(
+    @DrawableRes val iconRes: Int,
+    val label: String,
+    val value: String
+)
+
+private data class SplitMember(
+    @DrawableRes val avatarRes: Int,
+    val name: String,
+    val amount: String
+)
+
+private val ExpenseCategories = listOf(
+    ExpenseCategory(R.drawable.ic_food, "Food"),
+    ExpenseCategory(R.drawable.ic_car, "Transport"),
+    ExpenseCategory(R.drawable.ic_bed, "Stay"),
+    ExpenseCategory(R.drawable.ic_ticket, "Tickets")
+)
+
+private val ExpenseDetails = listOf(
+    ExpenseDetail(R.drawable.ic_note, "What for", "Dinner at Szara Gęś"),
+    ExpenseDetail(R.drawable.ic_guests, "Who paid", "Andrii (you)"),
+    ExpenseDetail(R.drawable.ic_calendar, "Date", "12 Sep · Day 1")
+)
+
 private val SplitOptions = listOf("Equally", "Shares", "Manual")
+
+private val SplitMembers = listOf(
+    SplitMember(R.drawable.img_profile_logo, "Andrii", "$32.00"),
+    SplitMember(R.drawable.img_profile_logo, "Kate", "$32.00"),
+    SplitMember(R.drawable.img_profile_logo, "Denys", "$32.00")
+)
 
 @Composable
 fun AddExpenseScreen(
@@ -59,257 +95,327 @@ fun AddExpenseScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Top Bar Header
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                // Header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp)
+                ) {
+                    CircleIconButton(
+                        iconRes = R.drawable.ic_arrow_back,
                         contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onBackClick,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+
+                    Text(
+                        text = "Add expense",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.W400
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    CircleIconButton(
+                        iconRes = R.drawable.ic_close,
+                        contentDescription = "Close",
+                        onClick = onBackClick,
+                        modifier = Modifier.align(Alignment.CenterEnd)
                     )
                 }
 
-                Text(
-                    text = "Add expense",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                IconButton(onClick = onBackClick) {
-                    Text(text = "✕", fontSize = 20.sp, color = Color.Gray)
-                }
-            }
-
-            // Amount Hero Display Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp)),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
+                // Amount
                 Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "$",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Gray
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.W500
+                            ),
+                            color = MaterialTheme.colorScheme.outline
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "128.00",
-                            fontSize = 36.sp,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                fontSize = 44.sp,
+                                lineHeight = 44.sp,
+                                fontWeight = FontWeight.W500
+                            ),
                             color = MaterialTheme.colorScheme.onBackground
                         )
                     }
 
+                    Spacer(modifier = Modifier.height(10.dp))
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
+                        Row(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+                                .clickable { }
+                                .padding(horizontal = 14.dp, vertical = 9.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "USD ⌄", fontSize = 11.sp, color = Color.Gray)
+                            Text(
+                                text = "USD",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_chevron_right),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .rotate(90f)
+                            )
                         }
-                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
                         Text(
                             text = "≈ 512.40 PLN",
-                            fontSize = 11.sp,
-                            color = Color.Gray
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                            color = MaterialTheme.colorScheme.outline
                         )
                     }
                 }
-            }
 
-            // Category Selector Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Category",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    itemsIndexed(ExpenseCategories) { index, category ->
-                        val isSelected = selectedCategoryIndex == index
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary
-                                    else Color.White
-                                )
-                                .clickable { selectedCategoryIndex = index }
-                                .padding(horizontal = 18.dp, vertical = 10.dp)
-                        ) {
-                            Text(
-                                text = category,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Details Group Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp)),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
-                Column {
-                    ExpenseDetailRow(label = "What for", value = "Dinner at Szara Gęś")
-                    HorizontalDivider(color = Color(0x0F000000))
-                    ExpenseDetailRow(label = "Who paid", value = "Andrii (you)")
-                    HorizontalDivider(color = Color(0x0F000000))
-                    ExpenseDetailRow(label = "Date", value = "12 Sep · Day 1")
-                }
-            }
-
-            // Split Between Section
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                // Category
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(
-                        text = "Split between 4",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
+                        text = "Category",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
                     )
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SplitOptions.forEachIndexed { index, option ->
-                            val isSelected = selectedSplitIndex == index
-                            Box(
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        itemsIndexed(ExpenseCategories) { index, category ->
+                            val isSelected = selectedCategoryIndex == index
+                            val contentColor =
+                                if (isSelected) Color.White else MaterialTheme.colorScheme.outline
+
+                            Row(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(50))
                                     .background(
                                         if (isSelected) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.surfaceVariant
+                                        else MaterialTheme.colorScheme.surface
                                     )
-                                    .clickable { selectedSplitIndex = index }
-                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                                    .clickable { selectedCategoryIndex = index }
+                                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Icon(
+                                    painter = painterResource(id = category.iconRes),
+                                    contentDescription = null,
+                                    tint = contentColor,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = option,
-                                    fontSize = 11.sp,
-                                    color = if (isSelected) Color.White else Color.Gray
+                                    text = category.name,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                    color = contentColor,
+                                    maxLines = 1
                                 )
                             }
                         }
                     }
                 }
 
-                Surface(
+                // Details
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    Column {
-                        SplitPersonRow(name = "Andrii", amount = "$32.00")
-                        HorizontalDivider(color = Color(0x0F000000))
-                        SplitPersonRow(name = "Kate", amount = "$32.00")
-                        HorizontalDivider(color = Color(0x0F000000))
-                        SplitPersonRow(name = "Denys", amount = "$32.00")
-                    }
-                }
-            }
+                    ExpenseDetails.forEachIndexed { index, detail ->
+                        ExpenseDetailRow(detail = detail)
 
-            // Attach Receipt Photo Dashed Card
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White)
-                    .clickable { }
-                    .padding(18.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "📷", fontSize = 20.sp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Add a receipt photo",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                            Text(
-                                text = "Optional · helps when settling up",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray,
-                                fontSize = 11.sp
+                        if (index != ExpenseDetails.lastIndex) {
+                            HorizontalDivider(
+//                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)
                             )
                         }
+                    }
+                }
+
+                // Split
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Split between 4",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            SplitOptions.forEachIndexed { index, option ->
+                                val isSelected = selectedSplitIndex == index
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(50))
+                                        .background(
+                                            if (isSelected) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)
+                                        )
+                                        .clickable { selectedSplitIndex = index }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        text = option,
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.outline,
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        SplitMembers.forEach { member ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Image(
+                                    painter = painterResource(id = member.avatarRes),
+                                    contentDescription = member.name,
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+
+                                Spacer(modifier = Modifier.width(10.dp))
+
+                                Text(
+                                    text = member.name,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                Text(
+                                    text = member.amount,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, fontWeight = FontWeight.W500),
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Receipt photo
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .clickable { }
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_camera),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Add a receipt photo",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            text = "Optional · helps when settling up",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                            color = MaterialTheme.colorScheme.outline
+                        )
                     }
 
                     Icon(
                         painter = painterResource(id = R.drawable.ic_chevron_right),
                         contentDescription = "Attach",
-                        tint = Color.LightGray,
+                        tint = MaterialTheme.colorScheme.outline,
                         modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Add Expense Button
-            Button(
-                onClick = onAddExpenseClick,
+            // Pinned button
+            Box(
                 modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable(onClick = onAddExpenseClick),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Add expense",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = Color.White
                 )
             }
@@ -318,76 +424,68 @@ fun AddExpenseScreen(
 }
 
 @Composable
-private fun ExpenseDetailRow(label: String, value: String) {
+private fun ExpenseDetailRow(detail: ExpenseDetail) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { }
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 15.dp, vertical = 15.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "📋", fontSize = 16.sp)
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.outline
-            )
-        }
+        Icon(
+            painter = painterResource(id = detail.iconRes),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.size(20.dp)
+        )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chevron_right),
-                contentDescription = "Details",
-                tint = Color.LightGray,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = detail.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.weight(1f)
+        )
+
+        Text(
+            text = detail.value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            maxLines = 1
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_right),
+            contentDescription = "Open",
+            tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }
 
 @Composable
-private fun SplitPersonRow(name: String, amount: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+private fun CircleIconButton(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFE8EAF6)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "👤", fontSize = 18.sp)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        Text(
-            text = amount,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
         )
     }
 }
