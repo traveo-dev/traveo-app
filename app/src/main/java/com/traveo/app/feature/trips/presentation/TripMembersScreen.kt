@@ -1,6 +1,7 @@
 package com.traveo.app.feature.trips.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,13 +21,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,11 +49,29 @@ import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
+private data class MemberItem(
+    val name: String,
+    val email: String,
+    val role: String
+)
+
+private val SampleMembers = listOf(
+    MemberItem("Andrii Bielov", "You · created the trip", "Owner"),
+    MemberItem("Kate Melnyk", "kate.m@gmail.com", "Editor"),
+    MemberItem("Denys Kovalenko", "denys.k@gmail.com", "Editor"),
+    MemberItem("Olha Serhiienko", "olha.s@gmail.com", "Viewer")
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripMembersScreen(
     onBackClick: () -> Unit = {},
     onInviteMoreClick: () -> Unit = {}
 ) {
+    var selectedMemberForRights by remember { mutableStateOf<MemberItem?>(null) }
+    var activeRole by remember { mutableStateOf("Editor") }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -101,13 +129,20 @@ fun TripMembersScreen(
                 shadowElevation = 2.dp
             ) {
                 Column {
-                    MemberRow(name = "Andrii Bielov", subtitle = "You · created the trip", role = "Owner")
-                    HorizontalDivider(color = Color(0x0F000000))
-                    MemberRow(name = "Kate Melnyk", subtitle = "kate.m@gmail.com", role = "Editor")
-                    HorizontalDivider(color = Color(0x0F000000))
-                    MemberRow(name = "Denys Kovalenko", subtitle = "denys.k@gmail.com", role = "Editor")
-                    HorizontalDivider(color = Color(0x0F000000))
-                    MemberRow(name = "Olha Serhiienko", subtitle = "olha.s@gmail.com", role = "Viewer")
+                    SampleMembers.forEachIndexed { index, member ->
+                        MemberRow(
+                            name = member.name,
+                            subtitle = member.email,
+                            role = member.role,
+                            onClick = {
+                                selectedMemberForRights = member
+                                activeRole = member.role
+                            }
+                        )
+                        if (index < SampleMembers.lastIndex) {
+                            HorizontalDivider(color = Color(0x0F000000))
+                        }
+                    }
                 }
             }
 
@@ -155,15 +190,213 @@ fun TripMembersScreen(
                 )
             }
         }
+
+        // Access Rights Modal Bottom Sheet
+        if (selectedMemberForRights != null) {
+            val member = selectedMemberForRights!!
+
+            ModalBottomSheet(
+                onDismissRequest = { selectedMemberForRights = null },
+                sheetState = sheetState,
+                containerColor = Color.White,
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    // Member Profile Info Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE8EAF6)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "👤", fontSize = 26.sp)
+                        }
+
+                        Spacer(modifier = Modifier.width(14.dp))
+
+                        Column {
+                            Text(
+                                text = member.name,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Text(
+                                text = if (member.email.contains("@")) member.email else "kate.m@gmail.com",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+
+                    // Section Title
+                    Text(
+                        text = "Access rights",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+
+                    // Access Rights Options List
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        AccessRightOptionCard(
+                            icon = "👑",
+                            title = "Owner",
+                            subtitle = "Full control, can delete the trip",
+                            isSelected = activeRole == "Owner",
+                            onClick = { activeRole = "Owner" }
+                        )
+
+                        AccessRightOptionCard(
+                            icon = "✏️",
+                            title = "Editor",
+                            subtitle = "Can add, edit and delete events",
+                            isSelected = activeRole == "Editor",
+                            onClick = { activeRole = "Editor" }
+                        )
+
+                        AccessRightOptionCard(
+                            icon = "👁️",
+                            title = "Viewer",
+                            subtitle = "Can only view the trip and chat",
+                            isSelected = activeRole == "Viewer",
+                            onClick = { activeRole = "Viewer" }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Remove From Trip Button
+                    Button(
+                        onClick = { selectedMemberForRights = null },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFF0F0)
+                        )
+                    ) {
+                        Text(
+                            text = "Remove from trip",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color(0xFFFF3B30),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun MemberRow(name: String, subtitle: String, role: String) {
+private fun AccessRightOptionCard(
+    icon: String,
+    title: String,
+    subtitle: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+    val backgroundColor = if (isSelected) Color(0xFFF2F7FF) else MaterialTheme.colorScheme.surfaceVariant
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(backgroundColor)
+            .border(
+                width = if (isSelected) 1.5.dp else 0.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(20.dp)
+            )
+            .clickable(onClick = onClick)
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = icon, fontSize = 18.sp)
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray,
+                        fontSize = 11.sp
+                    )
+                }
+            }
+
+            if (isSelected) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "✓", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.LightGray, CircleShape)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MemberRow(
+    name: String,
+    subtitle: String,
+    role: String,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
