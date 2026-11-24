@@ -1,5 +1,7 @@
 package com.traveo.app.feature.trips.presentation
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -19,16 +22,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -41,25 +39,44 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
+// Purple used for initials avatars. The theme has no token for it yet.
+private val InitialsPurple = Color(0xFF7B4DFF)
+
 private data class MemberItem(
     val name: String,
-    val email: String,
-    val role: String
+    val subtitle: String,
+    val role: String,
+    @DrawableRes val avatarRes: Int? = null,
+    val initials: String? = null
+)
+
+private data class AccessRight(
+    val role: String,
+    @DrawableRes val iconRes: Int,
+    val description: String
 )
 
 private val SampleMembers = listOf(
-    MemberItem("Andrii Bielov", "You · created the trip", "Owner"),
-    MemberItem("Kate Melnyk", "kate.m@gmail.com", "Editor"),
-    MemberItem("Denys Kovalenko", "denys.k@gmail.com", "Editor"),
-    MemberItem("Olha Serhiienko", "olha.s@gmail.com", "Viewer")
+    MemberItem("Andrii Bielov", "You · created the trip", "Owner", avatarRes = R.drawable.img_profile_logo),
+    MemberItem("Kate Melnyk", "kate.m@gmail.com", "Editor", avatarRes = R.drawable.img_profile_logo),
+    MemberItem("Denys Kovalenko", "denys.k@gmail.com", "Editor", avatarRes = R.drawable.img_profile_logo),
+    MemberItem("Olha Serhiienko", "olha.s@gmail.com", "Viewer", initials = "OS")
+)
+
+private val AccessRights = listOf(
+    AccessRight("Owner", R.drawable.ic_crown, "Full control, can delete the trip"),
+    AccessRight("Editor", R.drawable.ic_edit, "Can add, edit and delete events"),
+    AccessRight("Viewer", R.drawable.ic_eye, "Can only view the trip and chat")
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,319 +85,189 @@ fun TripMembersScreen(
     onBackClick: () -> Unit = {},
     onInviteMoreClick: () -> Unit = {}
 ) {
-    var selectedMemberForRights by remember { mutableStateOf<MemberItem?>(null) }
+    var selectedMember by remember { mutableStateOf<MemberItem?>(null) }
     var activeRole by remember { mutableStateOf("Editor") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Top Bar
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                // Header
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    CircleIconButton(
+                        iconRes = R.drawable.ic_arrow_back,
                         contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onBackClick,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+
+                    Text(
+                        text = "Members",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.W400
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    CircleIconButton(
+                        iconRes = R.drawable.ic_add,
+                        contentDescription = "Invite",
+                        onClick = onInviteMoreClick,
+                        modifier = Modifier.align(Alignment.CenterEnd)
                     )
                 }
 
                 Text(
-                    text = "Members",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    text = "Poland Road Trip · 4 people",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline
                 )
 
-                IconButton(onClick = onInviteMoreClick) {
-                    Text(text = "+", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-
-            Text(
-                text = "Poland Road Trip · 4 people",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                fontSize = 12.sp
-            )
-
-            // Members List Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp)),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
-                Column {
+                // Members
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
                     SampleMembers.forEachIndexed { index, member ->
                         MemberRow(
-                            name = member.name,
-                            subtitle = member.email,
-                            role = member.role,
+                            member = member,
                             onClick = {
-                                selectedMemberForRights = member
+                                selectedMember = member
                                 activeRole = member.role
                             }
                         )
-                        if (index < SampleMembers.lastIndex) {
-                            HorizontalDivider(color = Color(0x0F000000))
-                        }
+
+                        if (index != SampleMembers.lastIndex) RowDivider()
                     }
                 }
-            }
 
-            // Pending Invites Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Pending invites",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
+                // Pending invites
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        text = "Pending invites",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
-                ) {
-                    Column {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                    ) {
                         PendingInviteRow(email = "maks.i@gmail.com", time = "Sent 2 days ago")
-                        HorizontalDivider(color = Color(0x0F000000))
+                        RowDivider()
                         PendingInviteRow(email = "+48 512 004 118", time = "Sent yesterday")
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Invite More People Button
-            Button(
-                onClick = onInviteMoreClick,
+            // Pinned button
+            Box(
                 modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    .height(58.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable(onClick = onInviteMoreClick),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Invite more people",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = Color.White
                 )
             }
         }
 
-        // Access Rights Modal Bottom Sheet
-        if (selectedMemberForRights != null) {
-            val member = selectedMemberForRights!!
-
+        // Access rights sheet
+        selectedMember?.let { member ->
             ModalBottomSheet(
-                onDismissRequest = { selectedMemberForRights = null },
+                onDismissRequest = { selectedMember = null },
                 sheetState = sheetState,
-                containerColor = Color.White,
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+                containerColor = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                        .navigationBarsPadding()
+                        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Member Profile Info Header
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(52.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFE8EAF6)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "👤", fontSize = 26.sp)
-                        }
+                        PersonAvatar(member = member, size = 50.dp)
 
-                        Spacer(modifier = Modifier.width(14.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
 
                         Column {
                             Text(
                                 text = member.name,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = if (member.email.contains("@")) member.email else "kate.m@gmail.com",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.Gray,
-                                fontSize = 12.sp
+                                text = member.subtitle,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                color = MaterialTheme.colorScheme.outline
                             )
                         }
                     }
 
-                    // Section Title
                     Text(
                         text = "Access rights",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
-                        fontSize = 12.sp
+                        color = MaterialTheme.colorScheme.outline
                     )
 
-                    // Access Rights Options List
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        AccessRightOptionCard(
-                            icon = "👑",
-                            title = "Owner",
-                            subtitle = "Full control, can delete the trip",
-                            isSelected = activeRole == "Owner",
-                            onClick = { activeRole = "Owner" }
-                        )
-
-                        AccessRightOptionCard(
-                            icon = "✏️",
-                            title = "Editor",
-                            subtitle = "Can add, edit and delete events",
-                            isSelected = activeRole == "Editor",
-                            onClick = { activeRole = "Editor" }
-                        )
-
-                        AccessRightOptionCard(
-                            icon = "👁️",
-                            title = "Viewer",
-                            subtitle = "Can only view the trip and chat",
-                            isSelected = activeRole == "Viewer",
-                            onClick = { activeRole = "Viewer" }
-                        )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AccessRights.forEach { right ->
+                            AccessRightCard(
+                                right = right,
+                                isSelected = activeRole == right.role,
+                                onClick = { activeRole = right.role }
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Remove From Trip Button
-                    Button(
-                        onClick = { selectedMemberForRights = null },
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(50),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFFF0F0)
-                        )
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
+                            .clickable { selectedMember = null },
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Remove from trip",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = Color(0xFFFF3B30),
-                            fontWeight = FontWeight.SemiBold
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AccessRightOptionCard(
-    icon: String,
-    title: String,
-    subtitle: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-    val backgroundColor = if (isSelected) Color(0xFFF2F7FF) else MaterialTheme.colorScheme.surfaceVariant
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(backgroundColor)
-            .border(
-                width = if (isSelected) 1.5.dp else 0.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(20.dp)
-            )
-            .clickable(onClick = onClick)
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = icon, fontSize = 18.sp)
-                }
-
-                Spacer(modifier = Modifier.width(14.dp))
-
-                Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
-                        fontSize = 11.sp
-                    )
-                }
-            }
-
-            if (isSelected) {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "✓", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .border(1.dp, Color.LightGray, CircleShape)
-                )
             }
         }
     }
@@ -388,124 +275,275 @@ private fun AccessRightOptionCard(
 
 @Composable
 private fun MemberRow(
-    name: String,
-    subtitle: String,
-    role: String,
+    member: MemberItem,
     onClick: () -> Unit
 ) {
+    val isOwner = member.role == "Owner"
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFE8EAF6)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "👤", fontSize = 20.sp)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 11.sp
-                )
-            }
+        PersonAvatar(member = member, size = 44.dp)
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = member.name,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = member.subtitle,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1
+            )
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .background(
+                    if (isOwner) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)
+                )
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = member.role,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = if (isOwner) Color.White else MaterialTheme.colorScheme.outline,
+                maxLines = 1
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_right),
+            contentDescription = "Edit role",
+            tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+@Composable
+private fun PendingInviteRow(
+    email: String,
+    time: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_email_outline),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = email,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = time,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+                .clickable { }
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = "Resend",
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Icon(
+            painter = painterResource(id = R.drawable.ic_close),
+            contentDescription = "Cancel invite",
+            tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier
+                .size(20.dp)
+                .clickable { }
+        )
+    }
+}
+
+@Composable
+private fun AccessRightCard(
+    right: AccessRight,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val primary = MaterialTheme.colorScheme.primary
+    val shape = RoundedCornerShape(24.dp)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(if (isSelected) primary.copy(alpha = 0.06f) else MaterialTheme.colorScheme.surfaceVariant)
+            .then(if (isSelected) Modifier.border(1.5.dp, primary, shape) else Modifier)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = right.iconRes),
+                contentDescription = null,
+                tint = if (isSelected) primary else MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = right.role,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = right.description,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        if (isSelected) {
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        if (role == "Owner") MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surfaceVariant
-                    )
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(primary),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = role,
-                    fontSize = 11.sp,
-                    color = if (role == "Owner") Color.White else Color.Gray,
-                    fontWeight = FontWeight.Medium
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_check),
+                    contentDescription = "Selected",
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(6.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chevron_right),
-                contentDescription = "Edit Role",
-                tint = Color.LightGray,
-                modifier = Modifier.size(16.dp)
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .border(1.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), CircleShape)
             )
         }
     }
 }
 
 @Composable
-private fun PendingInviteRow(email: String, time: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "✉️", fontSize = 16.sp)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = email,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = time,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 11.sp
-                )
-            }
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .clickable { }
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Text(text = "Resend", fontSize = 11.sp, color = Color.Gray)
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "✕", fontSize = 16.sp, color = Color.Gray, modifier = Modifier.clickable { })
+private fun PersonAvatar(
+    member: MemberItem,
+    size: Dp
+) {
+    if (member.avatarRes != null) {
+        Image(
+            painter = painterResource(id = member.avatarRes),
+            contentDescription = member.name,
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(InitialsPurple),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = member.initials.orEmpty(),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W500),
+                color = Color.White
+            )
         }
     }
+}
+
+@Composable
+private fun CircleIconButton(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun RowDivider() {
+    HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
 }
 
 @Preview(showBackground = true, showSystemUi = true)
