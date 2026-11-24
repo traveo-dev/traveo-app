@@ -228,6 +228,7 @@ fun TripMembersScreen(
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onBackground
                             )
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = member.subtitle,
                                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
@@ -426,7 +427,7 @@ private fun AccessRightCard(
             .background(if (isSelected) primary.copy(alpha = 0.06f) else MaterialTheme.colorScheme.surfaceVariant)
             .then(if (isSelected) Modifier.border(1.5.dp, primary, shape) else Modifier)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -452,6 +453,7 @@ private fun AccessRightCard(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = right.description,
                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
@@ -459,7 +461,7 @@ private fun AccessRightCard(
             )
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         if (isSelected) {
             Box(
