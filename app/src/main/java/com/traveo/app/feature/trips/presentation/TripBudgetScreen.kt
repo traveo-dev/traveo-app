@@ -272,6 +272,7 @@ fun TripBudgetScreen(
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "for the hotel and taxi",
                                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
@@ -324,6 +325,7 @@ fun TripBudgetScreen(
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onBackground,
                                 )
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "for dinner and tickets",
                                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
