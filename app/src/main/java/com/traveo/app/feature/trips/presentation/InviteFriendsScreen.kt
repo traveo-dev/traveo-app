@@ -1,5 +1,7 @@
 package com.traveo.app.feature.trips.presentation
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -18,19 +21,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,96 +42,139 @@ import androidx.compose.ui.unit.sp
 import com.traveo.app.R
 import com.traveo.app.core.designsystem.theme.TraveoTheme
 
+private data class InviteContact(
+    val name: String,
+    val email: String,
+    @DrawableRes val avatarRes: Int? = null,
+    val initials: String? = null
+)
+
+private data class QuickAction(
+    @DrawableRes val iconRes: Int,
+    val label: String
+)
+
+private val QuickActions = listOf(
+    QuickAction(R.drawable.ic_arrow_up_right, "Share"),
+    QuickAction(R.drawable.ic_qr, "QR code"),
+    QuickAction(R.drawable.ic_user, "Contacts")
+)
+
+private val InviteContacts = listOf(
+    InviteContact("Kate Melnyk", "kate.m@gmail.com", avatarRes = R.drawable.img_profile_logo),
+    InviteContact("Denys Kovalenko", "denys.k@gmail.com", avatarRes = R.drawable.img_profile_logo),
+    InviteContact("Olha Serhiienko", "olha.s@gmail.com", initials = "OS"),
+    InviteContact("Maks Ivanov", "maks.i@gmail.com", initials = "MI")
+)
+
 @Composable
 fun InviteFriendsScreen(
     onBackClick: () -> Unit = {},
     onDoneClick: () -> Unit = {}
 ) {
+    val invitedEmails = remember { mutableStateListOf("kate.m@gmail.com", "denys.k@gmail.com") }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Top Bar
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                // Header
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    CircleIconButton(
+                        iconRes = R.drawable.ic_arrow_back,
                         contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onBackClick,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+
+                    Text(
+                        text = "Invite friends",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.W400
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    CircleIconButton(
+                        iconRes = R.drawable.ic_close,
+                        contentDescription = "Close",
+                        onClick = onDoneClick,
+                        modifier = Modifier.align(Alignment.CenterEnd)
                     )
                 }
 
+                // Heading
                 Text(
-                    text = "Invite friends",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    text = "Bring your\ntravel crew",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontSize = 32.sp,
+                        lineHeight = 40.sp,
+                        fontWeight = FontWeight.W400
+                    ),
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                IconButton(onClick = onDoneClick) {
-                    Text(text = "✕", fontSize = 20.sp, color = Color.Gray)
-                }
-            }
-
-            // Title Heading
-            Text(
-                text = "Bring your\ntravel crew",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 32.sp,
-                lineHeight = 38.sp
-            )
-
-            // Invite Link Box Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp)),
-                color = Color.White,
-                shadowElevation = 2.dp
-            ) {
+                // Invite link
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = "🔗", fontSize = 18.sp)
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(
-                                    text = "Invite link · anyone with it can join",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray,
-                                    fontSize = 11.sp
-                                )
-                                Text(
-                                    text = "traveo.app/j/PL-4821",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onBackground
-                                )
-                            }
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_link),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Invite link · anyone with it can join",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                color = MaterialTheme.colorScheme.outline,
+                                maxLines = 1
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "traveo.app/j/PL-4821",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                maxLines = 1
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
 
                         Box(
                             modifier = Modifier
@@ -139,69 +185,93 @@ fun InviteFriendsScreen(
                         ) {
                             Text(
                                 text = "Copy",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
                                 color = Color.White
                             )
                         }
                     }
 
-                    // Quick Action Buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        QuickActionButton(icon = "↗", label = "Share", modifier = Modifier.weight(1f))
-                        QuickActionButton(icon = "⊞", label = "QR code", modifier = Modifier.weight(1f))
-                        QuickActionButton(icon = "👤", label = "Contacts", modifier = Modifier.weight(1f))
+                        QuickActions.forEach { action ->
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(72.dp)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+                                    .clickable { },
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = action.iconRes),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = action.label,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
                     }
                 }
-            }
 
-            // Contacts List Section
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Contacts
                 Text(
                     text = "From your contacts",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 12.sp
+                    color = MaterialTheme.colorScheme.outline
                 )
 
-                Surface(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp)),
-                    color = Color.White,
-                    shadowElevation = 2.dp
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    Column {
-                        ContactRow(name = "Kate Melnyk", email = "kate.m@gmail.com", isInvited = true)
-                        HorizontalDivider(color = Color(0x0F000000))
-                        ContactRow(name = "Denys Kovalenko", email = "denys.k@gmail.com", isInvited = true)
-                        HorizontalDivider(color = Color(0x0F000000))
-                        ContactRow(name = "Olha Serhiienko", email = "olha.s@gmail.com", isInvited = false)
-                        HorizontalDivider(color = Color(0x0F000000))
-                        ContactRow(name = "Maks Ivanov", email = "maks.i@gmail.com", isInvited = false)
+                    InviteContacts.forEachIndexed { index, contact ->
+                        val isInvited = contact.email in invitedEmails
+
+                        ContactRow(
+                            contact = contact,
+                            isInvited = isInvited,
+                            onInviteClick = {
+                                if (isInvited) invitedEmails.remove(contact.email)
+                                else invitedEmails.add(contact.email)
+                            }
+                        )
+
+                        if (index != InviteContacts.lastIndex) {
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Done Button
-            Button(
-                onClick = onDoneClick,
+            // Pinned button
+            Box(
                 modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable(onClick = onDoneClick),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Done · 2 invited",
-                    style = MaterialTheme.typography.labelLarge,
+                    text = "Done · ${invitedEmails.size} invited",
+                    style = MaterialTheme.typography.bodyLarge,
                     color = Color.White
                 )
             }
@@ -210,76 +280,102 @@ fun InviteFriendsScreen(
 }
 
 @Composable
-private fun QuickActionButton(icon: String, label: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .height(64.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable { },
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = icon, fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(text = label, fontSize = 11.sp, color = Color.Gray)
-        }
-    }
-}
-
-@Composable
-private fun ContactRow(name: String, email: String, isInvited: Boolean) {
+private fun ContactRow(
+    contact: InviteContact,
+    isInvited: Boolean,
+    onInviteClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        if (contact.avatarRes != null) {
+            Image(
+                painter = painterResource(id = contact.avatarRes),
+                contentDescription = contact.name,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        } else {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE8EAF6)),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "👤", fontSize = 20.sp)
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
                 Text(
-                    text = name,
+                    text = contact.initials.orEmpty(),
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = email,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    fontSize = 11.sp
+                    color = Color.White
                 )
             }
         }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = contact.name,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = contact.email,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
 
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
                 .background(
                     if (isInvited) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.surfaceVariant
+                    else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f)
                 )
-                .clickable { }
-                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .clickable(onClick = onInviteClick)
+                .padding(horizontal = 14.dp, vertical = 8.dp)
         ) {
             Text(
                 text = "Invite",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = if (isInvited) Color.White else Color.Gray
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = if (isInvited) Color.White else MaterialTheme.colorScheme.outline
             )
         }
+    }
+}
+
+@Composable
+private fun CircleIconButton(
+    @DrawableRes iconRes: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(50.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp)
+        )
     }
 }
 
