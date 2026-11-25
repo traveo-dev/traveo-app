@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -81,6 +82,7 @@ fun TripTimelineScreen(
     onEventClick: () -> Unit = {}
 ) {
     var selectedDayIndex by remember { mutableIntStateOf(0) }
+    var showAddEventSheet by remember { mutableStateOf(false) }
 
     val primary = MaterialTheme.colorScheme.primary
     val events = listOf(
@@ -234,7 +236,7 @@ fun TripTimelineScreen(
                 .size(56.dp)
                 .clip(CircleShape)
                 .background(primary)
-                .clickable(onClick = onAddEventClick),
+                .clickable { showAddEventSheet = true },
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -242,6 +244,33 @@ fun TripTimelineScreen(
                 contentDescription = "Add event",
                 tint = Color.White,
                 modifier = Modifier.size(24.dp)
+            )
+        }
+
+        // Add Event Bottom Sheet Modal
+        if (showAddEventSheet) {
+            AddEventBottomSheet(
+                onDismiss = { showAddEventSheet = false },
+                onSelectTransport = {
+                    showAddEventSheet = false
+                    onAddEventClick()
+                },
+                onSelectStay = {
+                    showAddEventSheet = false
+                    onAddEventClick()
+                },
+                onSelectActivity = {
+                    showAddEventSheet = false
+                    onAddEventClick()
+                },
+                onSelectFood = {
+                    showAddEventSheet = false
+                    onAddEventClick()
+                },
+                onScanTicket = {
+                    showAddEventSheet = false
+                    onAddEventClick()
+                }
             )
         }
     }
