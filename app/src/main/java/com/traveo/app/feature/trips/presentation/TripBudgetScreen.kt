@@ -89,7 +89,7 @@ fun TripBudgetScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .statusBarsPadding()
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 100.dp), // room for the pinned button
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 150.dp), // room for the pinned button
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Header
@@ -318,18 +318,10 @@ fun TripBudgetScreen(
 
                             Spacer(modifier = Modifier.width(12.dp))
 
-                            Text(
-                                text = "You owe Denys",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                modifier = Modifier.weight(1f)
-                            )
-
-
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "You owe Denys",
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onBackground,
                                 )
                                 Text(
